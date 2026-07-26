@@ -102,29 +102,32 @@
     svg#graph-canvas:active { cursor: grabbing; }
 
     /* SVG Graph Elements */
-    .link { stroke: #2a2a2a; stroke-opacity: 0.85; stroke-width: 1.5px; }
-    .node { cursor: pointer; transition: transform 0.2s ease; }
-    .node circle {
-      fill: #141414;
+    .link { stroke: rgba(212, 175, 55, 0.25); stroke-width: 1px; }
+    .node { cursor: pointer; }
+    .node circle.outer-ring {
+      fill: #0d0d0d;
       stroke: var(--accent-gold);
-      stroke-width: 2px;
-      transition: fill 0.2s, stroke-width 0.2s;
+      stroke-width: 1.5px;
+      transition: stroke 0.2s, stroke-width 0.2s, filter 0.2s;
     }
-    .node:hover circle {
-      fill: #222222;
+    .node circle.inner-core {
+      fill: var(--accent-gold);
+      transition: fill 0.2s;
+    }
+    .node:hover circle.outer-ring {
       stroke: var(--accent-gold-hover);
-      stroke-width: 3.5px;
-      filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.7));
+      stroke-width: 2.5px;
+      filter: drop-shadow(0 0 8px rgba(212, 175, 55, 0.6));
     }
     .node text {
       fill: var(--accent-gold);
-      font-size: 10px;
+      font-family: "Courier New", monospace;
+      font-size: 8px;
       font-weight: 700;
-      letter-spacing: 0.8px;
+      letter-spacing: 0.5px;
       pointer-events: none;
       text-anchor: middle;
       dominant-baseline: central;
-      text-transform: uppercase;
     }
 
     /* Wave Graphic */
@@ -392,7 +395,7 @@
       addLink(i, (i + 12) % 16);
     }
 
-    // --- D3 Network Graph with Zoom/Pan Engine ---
+    // --- D3 Network Graph with Architectural Node Logic ---
     const frameEl = document.querySelector('.graph-frame');
     let width = frameEl.clientWidth;
     let height = frameEl.clientHeight;
@@ -409,19 +412,21 @@
     svg.call(zoom);
 
     const simulation = d3.forceSimulation(nodesData)
-      .force("link", d3.forceLink(linksData).id(d => d.id).distance(120))
-      .force("charge", d3.forceManyBody().strength(-280))
+      .force("link", d3.forceLink(linksData).id(d => d.id).distance(110))
+      .force("charge", d3.forceManyBody().strength(-220))
       .force("center", d3.forceCenter(width / 2, height / 2))
-      .force("magnetX", d3.forceX(width / 2).strength(0.08))
-      .force("magnetY", d3.forceY(height / 2).strength(0.08));
+      .force("magnetX", d3.forceX(width / 2).strength(0.06))
+      .force("magnetY", d3.forceY(height / 2).strength(0.06));
 
     const link = container.append("g")
+      .attr("class", "links")
       .selectAll("line")
       .data(linksData)
       .enter().append("line")
       .attr("class", "link");
 
     const node = container.append("g")
+      .attr("class", "nodes")
       .selectAll(".node")
       .data(nodesData)
       .enter().append("g")
@@ -432,8 +437,19 @@
         .on("end", dragended))
       .on("click", (event, d) => openTet(d));
 
-    node.append("circle").attr("r", 25);
-    node.append("text").text(d => d.displayLabel);
+    // Outer Architectural Boundary Ring
+    node.append("circle")
+      .attr("class", "outer-ring")
+      .attr("r", 20);
+
+    // Inner Core Point
+    node.append("circle")
+      .attr("class", "inner-core")
+      .attr("r", 2);
+
+    // Monospaced Label Container
+    node.append("text")
+      .text(d => d.displayLabel);
 
     simulation.on("tick", () => {
       link
@@ -547,8 +563,8 @@
       width = frameEl.clientWidth;
       height = frameEl.clientHeight;
       simulation.force("center", d3.forceCenter(width / 2, height / 2));
-      simulation.force("magnetX", d3.forceX(width / 2).strength(0.08));
-      simulation.force("magnetY", d3.forceY(height / 2).strength(0.08));
+      simulation.force("magnetX", d3.forceX(width / 2).strength(0.06));
+      simulation.force("magnetY", d3.forceY(height / 2).strength(0.06));
       simulation.alpha(0.3).restart();
     });
   </script>

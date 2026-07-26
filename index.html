@@ -4,311 +4,40 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>fluidCymatics.dev — Studio & Codex Engine</title>
+  <link rel="stylesheet" href="styles.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css">
-  <style>
-    :root {
-      --bg-color: #0d0d0d;
-      --card-bg: #141414;
-      --accent-gold: #d4af37;
-      --accent-gold-hover: #f3e5ab;
-      --header-color: #e6e6e6;
-      --text-muted: #888888;
-      --border-color: #262626;
-      --link-color: #d4af37;
-    }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      background-color: var(--bg-color);
-      color: #b0b0b0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      min-height: 100vh;
-      width: 100vw;
-      overflow-x: hidden;
-    }
-
-    /* Master Outer Wrapper */
-    #app {
-      position: relative;
-      width: 100%;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      background: radial-gradient(circle at center, #181818 0%, #080808 100%);
-    }
-
-    /* Page Sections Container */
-    .content-stream {
-      width: 100%;
-      max-width: 1100px;
-      padding: 40px 24px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 36px;
-      z-index: 1;
-    }
-
-    /* Brand Logo Block */
-    .logo-wrapper {
-      margin-bottom: 8px;
-    }
-    .logo-wrapper img {
-      max-width: 220px;
-      height: auto;
-      display: block;
-    }
-
-    /* Bio Block */
-    .bio-text {
-      text-align: center;
-      max-width: 680px;
-    }
-    .bio-text h1 {
-      color: var(--header-color);
-      font-size: 26px;
-      font-weight: 700;
-      letter-spacing: 0.5px;
-      margin-bottom: 8px;
-    }
-    .bio-text p {
-      font-size: 14px;
-      line-height: 1.6;
-      color: var(--text-muted);
-    }
-
-    /* D3 Force Graph Frame */
-    .graph-frame {
-      width: 100%;
-      height: 580px;
-      background: rgba(18, 18, 18, 0.7);
-      border: 1px solid var(--border-color);
-      border-radius: 6px;
-      position: relative;
-      overflow: hidden;
-      box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
-    }
-
-    svg#graph-canvas {
-      width: 100%;
-      height: 100%;
-      display: block;
-      cursor: grab;
-    }
-    svg#graph-canvas:active { cursor: grabbing; }
-
-    /* SVG Graph Elements */
-    .link { stroke: rgba(212, 175, 55, 0.25); stroke-width: 1px; }
-    .node { cursor: pointer; }
-    .node circle.outer-ring {
-      fill: #0d0d0d;
-      stroke: var(--accent-gold);
-      stroke-width: 1.5px;
-      transition: stroke 0.2s, stroke-width 0.2s, filter 0.2s;
-    }
-    .node circle.inner-core {
-      fill: var(--accent-gold);
-      transition: fill 0.2s;
-    }
-    .node:hover circle.outer-ring {
-      stroke: var(--accent-gold-hover);
-      stroke-width: 2.5px;
-      filter: drop-shadow(0 0 8px rgba(212, 175, 55, 0.6));
-    }
-    .node text {
-      fill: var(--accent-gold);
-      font-family: "Courier New", monospace;
-      font-size: 8px;
-      font-weight: 700;
-      letter-spacing: 0.5px;
-      pointer-events: none;
-      text-anchor: middle;
-      dominant-baseline: central;
-    }
-
-    /* Wave Graphic */
-    .wave-graphic {
-      width: 100%;
-      max-width: 720px;
-      display: flex;
-      justify-content: center;
-      margin: 12px 0;
-    }
-    .wave-graphic img {
-      width: 100%;
-      height: auto;
-      opacity: 0.85;
-    }
-
-    /* Stockhausen Quote Block */
-    .quote-block {
-      max-width: 680px;
-      text-align: center;
-      padding: 0 20px;
-    }
-    .quote-block blockquote {
-      font-size: 15px;
-      font-style: italic;
-      line-height: 1.7;
-      color: #cccccc;
-      margin-bottom: 10px;
-    }
-    .quote-block cite {
-      font-size: 12px;
-      color: var(--accent-gold);
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      font-style: normal;
-      font-weight: 600;
-    }
-
-    /* Nav Footer */
-    .nav-links {
-      display: flex;
-      gap: 16px;
-      align-items: center;
-      margin-top: 12px;
-      padding-top: 20px;
-      border-top: 1px solid #1a1a1a;
-      width: 100%;
-      justify-content: center;
-    }
-    .nav-links a {
-      color: var(--text-muted);
-      text-decoration: none;
-      font-size: 12px;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      transition: color 0.2s;
-    }
-    .nav-links a:hover { color: var(--accent-gold); }
-    .nav-links .divider { color: #333333; font-size: 12px; }
-
-    /* Slide-out TET Drawer Panel */
-    #tet-panel {
-      width: 560px;
-      max-width: 90vw;
-      height: 100vh;
-      background-color: #121212;
-      border-left: 1px solid var(--border-color);
-      box-shadow: -12px 0 35px rgba(0,0,0,0.9);
-      position: fixed;
-      right: -570px;
-      top: 0;
-      transition: right 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-      z-index: 100;
-      display: flex;
-      flex-direction: column;
-    }
-    #tet-panel.active { right: 0; }
-
-    .panel-header {
-      padding: 16px 24px;
-      border-bottom: 1px solid #222;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: #0a0a0a;
-    }
-    .panel-header-title {
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 1.5px;
-      color: var(--text-muted);
-      font-weight: 700;
-    }
-    .close-btn {
-      background: none;
-      border: 1px solid #333;
-      color: var(--text-muted);
-      width: 28px;
-      height: 28px;
-      border-radius: 4px;
-      cursor: pointer;
-      font-weight: bold;
-    }
-    .close-btn:hover { color: #fff; border-color: #666; }
-
-    /* Obsidian TET Styles inside Panel */
-    .tet-container {
-      padding: 32px 28px;
-      overflow-y: auto;
-      flex: 1;
-      font-size: 13.5px;
-      line-height: 1.6;
-    }
-    .tet-tags { display: flex; gap: 6px; margin-bottom: 12px; }
-    .tet-tag {
-      background: #1a1a1a;
-      border: 1px solid #2a2a2a;
-      color: var(--text-muted);
-      font-size: 10px;
-      padding: 2px 6px;
-      border-radius: 3px;
-      font-weight: 600;
-      letter-spacing: 0.5px;
-    }
-    .tet-breadcrumbs { font-size: 11px; color: #666; margin-bottom: 24px; }
-    .tet-breadcrumbs a { color: var(--text-muted); text-decoration: none; border-bottom: 1px dotted #444; }
-
-    .kernel-bloc {
-      background: #161616;
-      border-left: 3px solid var(--accent-gold);
-      padding: 12px 16px;
-      border-radius: 2px;
-      margin: 18px 0;
-      font-size: 12.5px;
-      display: flex;
-      gap: 12px;
-    }
-    .insignia-icon { font-size: 18px; line-height: 1; }
-    .guardrail-bloc { background: #1a1212; border-left-color: #aa3333; }
-    .volatility-bloc { background: #1a1812; border-left-color: #d48837; }
-
-    .tet-h1 { color: #f0f0f0; font-size: 20px; font-weight: 700; margin-bottom: 12px; text-transform: uppercase; }
-    .tet-h2 { color: var(--accent-gold); font-size: 15px; font-weight: 600; margin: 24px 0 10px 0; text-transform: uppercase; }
-    .tet-h3 { color: var(--accent-gold); font-size: 13.5px; font-weight: 600; margin: 18px 0 8px 0; }
-    .tet-math { background: #141414; padding: 14px; text-align: center; margin: 18px 0; border-radius: 4px; border: 1px solid #222; }
-    .tet-quote { border-left: 2px solid #444; padding-left: 12px; margin: 14px 0; color: var(--text-muted); font-style: italic; }
-    .tet-checklist { list-style: none; margin: 12px 0; }
-    .tet-checklist li { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; color: var(--text-muted); }
-    .tet-checklist input { accent-color: var(--accent-gold); }
-    .tet-symbol { text-align: center; margin: 28px 0; font-size: 72px; color: #332a15; font-family: serif; user-select: none; }
-    .tet-footer { border-top: 1px solid #222; padding-top: 16px; font-size: 11px; color: #555; text-transform: uppercase; }
-  </style>
 </head>
 <body>
 
+  <!-- DYNAMIC SHRINKING HEADER BANNER -->
+  <header id="hero-banner">
+    <div class="banner-content">
+      <img src="fluidCymatics.dev.png" alt="fluidCymatics.dev" class="brand-logo-img">
+      <div class="brand-subtext">// Knowledge systems architecture</div>
+    </div>
+  </header>
+
   <div id="app">
+    <!-- FULL 100VW x 100VH FLY-THROUGH GRAPH VIEWPORT -->
+    <div class="graph-viewport">
+      <svg id="graph-canvas"></svg>
+    </div>
+
+    <!-- CONTENT STREAM BELOW CANVAS -->
     <div class="content-stream">
 
-      <!-- BRAND LOGO -->
-      <div class="logo-wrapper">
-        <img src="fluidCymatics.dev.png" alt="fluidCymatics.dev">
-      </div>
-
-      <!-- BIO BLOCK -->
       <div class="bio-text">
         <h1>Knowledge Systems Architect.</h1>
         <p>Designing ontologies, graph logic, & custom interfaces for RAG/LLM context routing.</p>
-        <p style="color: var(--header-color); margin-top: 4px;">Joining raw data to fluid structure.</p>
+        <p style="color: var(--cahier); margin-top: 4px;">Joining raw data to fluid structure.</p>
       </div>
 
-      <!-- GRAPH FRAME -->
-      <div class="graph-frame">
-        <svg id="graph-canvas"></svg>
-      </div>
-
-      <!-- WAVE GRAPHIC -->
       <div class="wave-graphic">
         <img src="fluidCymaticsWave.png" alt="Fluid Cymatics Wave Structure">
       </div>
 
-      <!-- STOCKHAUSEN QUOTE BLOCK -->
       <div class="quote-block">
         <blockquote>
           "Technical progress is only valid if it serves the spiritual evolution of mankind... We must transform sound into something that opens new dimensions of consciousness."
@@ -316,7 +45,6 @@
         <cite>— Karlheinz Stockhausen</cite>
       </div>
 
-      <!-- NAV FOOTER -->
       <nav class="nav-links">
         <a href="#projects">projects</a>
         <span class="divider">|</span>
@@ -329,10 +57,17 @@
 
     </div>
 
+    <!-- SAGAN FOOTER ROW -->
+    <footer class="site-footer">
+      <div class="sagan-quote">
+        "The cosmos is within us. We are made of star-stuff. We are a way for the cosmos to know itself." — Carl Sagan
+      </div>
+    </footer>
+
     <!-- SLIDE-OUT TET INSPECTOR -->
     <div id="tet-panel">
       <div class="panel-header">
-        <span class="panel-header-title">SYS // The Chasis — BLOC Inspector</span>
+        <span class="panel-header-title">SYS // The Chassis — BLOC inspector</span>
         <button class="close-btn" onclick="closePanel()">×</button>
       </div>
       <div class="tet-container" id="tet-content">
@@ -342,38 +77,55 @@
   </div>
 
   <script>
-    // --- Typographic Firewall Rule Definition Data ---
+    // --- Shrinking Banner Scroll Handler ---
+    const banner = document.getElementById('hero-banner');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 40) {
+        banner.classList.add('shrunk');
+      } else {
+        banner.classList.remove('shrunk');
+      }
+    });
+
+    // --- Isotropic Tetrahedral Node Matrix (64 Nodes) ---
     const rootAxes = ['LINEAGE', 'SYNTHESIS', 'ARTIFACT', 'SYSTEM'];
-    const branchAxes = ['OPTICAL', 'ACOUSTIC'];
+    const branchAxes = ['OPTICAL', 'ACOUSTIC', 'KINETIC', 'STATIC'];
     const states = ['Idea', 'Fracture', 'Gravity', 'Residue'];
-    const phases = ['Capture (NULL -> Idea)', 'Detachment (Idea -> Fracture)', 'Mirroring (Fracture -> Gravity)', 'Artifacting (Gravity -> Residue)'];
+    const phases = [
+      'Capture (NULL -> Idea)', 
+      'Detachment (Idea -> Fracture)', 
+      'Mirroring (Fracture -> Gravity)', 
+      'Artifacting (Gravity -> Residue)'
+    ];
     const tokens = [
-      'Chasis Prime', 'Vessel Vector', 'Resonance Core', 'Null Shift',
+      'Chassis Prime', 'Vessel Vector', 'Resonance Core', 'Null Shift',
       'Acoustic Lattice', 'Optical Mirror', 'TET Matrix', 'Void Blade',
       'Octahedron Node', 'Kernel Anchor', 'Signal Drift', 'Poetic Threshold',
       'Esoteric Code', 'Exoteric Portal', 'Operation Axis', 'Frozen Mass'
     ];
 
-    const nodesData = Array.from({ length: 16 }, (_, i) => {
+    const nodesData = Array.from({ length: 64 }, (_, i) => {
       const root = rootAxes[i % rootAxes.length];
       const branch = branchAxes[i % branchAxes.length];
-      const token = tokens[i];
+      const token = tokens[i % tokens.length];
+      const codeNum = String(i + 1).padStart(2, '0');
       return {
         id: `tet-${i + 1}`,
+        index: i,
         code: `${i + 1}-${root[0]}`,
         root: root,
         branch: branch,
         token: token,
-        title: `${i + 1}-${root[0]} ${root} - ${branch} - ${token}`,
-        displayLabel: `${root.slice(0,3)}-${branch.slice(0,3)}-${String(i+1).padStart(2,'0')}`,
-        tag: i % 3 === 0 ? '#EXT' : (i % 2 === 0 ? '#INT' : '#SYS'),
+        title: `${codeNum}-${root[0]} ${root} - ${branch} - ${token}`,
+        displayLabel: `${root} — ${token}`,
+        tag: i % 4 === 0 ? '#EXT' : (i % 3 === 0 ? '#INT' : '#SYS'),
         state: states[i % states.length],
         phase: phases[i % phases.length],
-        stage: `Stage ${(i % 4) + 1} The ${['Container', 'Operator', 'Chasis', 'Resonator'][i % 4]}`
+        stage: `Stage ${(i % 4) + 1} System Lattice`
       };
     });
 
-    // --- Strict Degree-4 Tetrahedral Link Generation ---
+    // --- Strict Degree-4 Isotropic Vector Matrix Topology ---
     const linksData = [];
     const linkSet = new Set();
 
@@ -388,35 +140,57 @@
       }
     }
 
-    for (let i = 0; i < 16; i++) {
-      addLink(i, (i + 1) % 16);
-      addLink(i, (i + 15) % 16);
-      addLink(i, (i + 4) % 16);
-      addLink(i, (i + 12) % 16);
+    for (let i = 0; i < 64; i++) {
+      addLink(i, (i + 1) % 64);
+      addLink(i, (i + 4) % 64);
+      addLink(i, (i + 16) % 64);
+      addLink(i, (i + 20) % 64);
     }
 
-    // --- D3 Network Graph with Architectural Node Logic ---
-    const frameEl = document.querySelector('.graph-frame');
-    let width = frameEl.clientWidth;
-    let height = frameEl.clientHeight;
+    // --- Expanded Fly-Through Isotropic Force Engine ---
+    const viewport = document.querySelector('.graph-viewport');
+    let width = viewport.clientWidth;
+    let height = viewport.clientHeight;
 
     const svg = d3.select("#graph-canvas");
+
+    const defs = svg.append("defs");
+    defs.append("marker")
+      .attr("id", "arrow-active")
+      .attr("viewBox", "0 -5 10 10")
+      .attr("refX", 10)
+      .attr("refY", 0)
+      .attr("markerWidth", 5)
+      .attr("markerHeight", 5)
+      .attr("orient", "auto")
+      .append("path")
+      .attr("d", "M0,-5L10,0L0,5");
+
     const container = svg.append("g").attr("class", "graph-container");
 
     const zoom = d3.zoom()
-      .scaleExtent([0.2, 4])
+      .scaleExtent([0.05, 12])
       .on("zoom", (event) => {
         container.attr("transform", event.transform);
+        const k = event.transform.k;
+        const opacity = Math.min(1, Math.max(0.08, (k - 0.2) * 1.2));
+        d3.selectAll(".node-label").style("opacity", opacity);
       });
 
     svg.call(zoom);
 
+    svg.on("click", (event) => {
+      if (event.target.tagName === 'svg') {
+        clearHighlights();
+        closePanel();
+      }
+    });
+
     const simulation = d3.forceSimulation(nodesData)
-      .force("link", d3.forceLink(linksData).id(d => d.id).distance(110))
-      .force("charge", d3.forceManyBody().strength(-220))
+      .force("link", d3.forceLink(linksData).id(d => d.id).distance(180).strength(0.85))
+      .force("charge", d3.forceManyBody().strength(-280))
       .force("center", d3.forceCenter(width / 2, height / 2))
-      .force("magnetX", d3.forceX(width / 2).strength(0.06))
-      .force("magnetY", d3.forceY(height / 2).strength(0.06));
+      .force("collide", d3.forceCollide().radius(28).strength(0.8));
 
     const link = container.append("g")
       .attr("class", "links")
@@ -435,20 +209,26 @@
         .on("start", dragstarted)
         .on("drag", dragged)
         .on("end", dragended))
-      .on("click", (event, d) => openTet(d));
+      .on("click", (event, d) => {
+        event.stopPropagation();
+        highlightTracePath(d);
+        openTet(d);
+      })
+      .on("mouseover", (event, d) => {
+        if (!selectedNode) highlightTracePath(d, true);
+      })
+      .on("mouseout", () => {
+        if (!selectedNode) clearHighlights();
+      });
 
-    // Outer Architectural Boundary Ring
     node.append("circle")
-      .attr("class", "outer-ring")
-      .attr("r", 20);
+      .attr("class", "node-dot")
+      .attr("r", 2.5);
 
-    // Inner Core Point
-    node.append("circle")
-      .attr("class", "inner-core")
-      .attr("r", 2);
-
-    // Monospaced Label Container
     node.append("text")
+      .attr("class", "node-label")
+      .attr("dx", 7)
+      .attr("dy", 2)
       .text(d => d.displayLabel);
 
     simulation.on("tick", () => {
@@ -462,6 +242,45 @@
         .attr("transform", d => `translate(${d.x}, ${d.y})`);
     });
 
+    let selectedNode = null;
+
+    function highlightTracePath(targetNode, isHover = false) {
+      if (!isHover) selectedNode = targetNode;
+
+      const connectedNodeIds = new Set([targetNode.id]);
+      
+      link.classed("highlighted", false)
+          .classed("dimmed", true)
+          .attr("marker-end", null);
+
+      link.each(function(l) {
+        const sourceId = typeof l.source === 'object' ? l.source.id : l.source;
+        const targetId = typeof l.target === 'object' ? l.target.id : l.target;
+
+        if (sourceId === targetNode.id || targetId === targetNode.id) {
+          d3.select(this)
+            .classed("highlighted", true)
+            .classed("dimmed", false)
+            .attr("marker-end", "url(#arrow-active)");
+          
+          connectedNodeIds.add(sourceId);
+          connectedNodeIds.add(targetId);
+        }
+      });
+
+      node.classed("active-focus", d => d.id === targetNode.id)
+          .classed("dimmed", d => !connectedNodeIds.has(d.id));
+    }
+
+    function clearHighlights() {
+      selectedNode = null;
+      link.classed("highlighted", false)
+          .classed("dimmed", false)
+          .attr("marker-end", null);
+      node.classed("active-focus", false)
+          .classed("dimmed", false);
+    }
+
     function dragstarted(event, d) {
       if (!event.active) simulation.alphaTarget(0.3).restart();
       d.fx = d.x; d.fy = d.y;
@@ -471,12 +290,13 @@
       d.fx = event.x; d.fy = event.y;
     }
 
+    // --- STICKY DRAG PINNING ---
     function dragended(event, d) {
       if (!event.active) simulation.alphaTarget(0);
-      d.fx = null; d.fy = null;
+      d.fx = d.x; 
+      d.fy = d.y;
     }
 
-    // --- TET Panel Handler ---
     function openTet(nodeData) {
       const panel = document.getElementById('tet-panel');
       const container = document.getElementById('tet-content');
@@ -490,7 +310,7 @@
         </div>
 
         <div class="tet-breadcrumbs">
-          <a>Intake</a> • <a>Dashboard</a> • <a>${nodeData.stage}</a> • <a>SYS // The Chasis</a>
+          <a>Intake</a> • <a>Dashboard</a> • <a>${nodeData.stage}</a> • <a>SYS // The Chassis</a>
         </div>
 
         <div class="tet-h1">${nodeData.title}</div>
@@ -511,11 +331,11 @@
           </div>
         </div>
 
-        <div class="tet-h2">Systemic Breakdown - ${nodeData.branch}</div>
+        <div class="tet-h2">Systemic breakdown - ${nodeData.branch}</div>
         <p>If you ever want to test font vectors or spatial balance for this specific BLOC outside of Obsidian, utilize external vector analysis engines:</p>
         <ul style="margin-left: 20px; margin-top: 8px;">
-          <li><strong style="color:var(--accent-gold)">Fontjoy.com:</strong> Instant header/body pairings on dark canvas.</li>
-          <li><strong style="color:var(--accent-gold)">Typeconnection.com:</strong> Structural matrix engine for typography classification.</li>
+          <li><strong style="color:var(--accent)">Fontjoy.com:</strong> Instant header/body pairings on dark canvas.</li>
+          <li><strong style="color:var(--accent)">Typeconnection.com:</strong> Structural matrix engine for typography classification.</li>
         </ul>
 
         <div class="tet-math" id="math-${nodeData.id}"></div>
@@ -527,18 +347,18 @@
           </div>
         </div>
 
-        <div class="tet-h2">Quick Brown Fox Jumped Over the Fence</div>
-        <div style="font-weight: 700; color: var(--accent-gold); letter-spacing: 1px; margin-bottom: 6px;">ABCDEFGHIJKLMNOPQRSTUVWXYZ</div>
+        <div class="tet-h2">Quick brown fox jumped over the fence</div>
+        <div style="font-weight: 700; color: var(--accent); letter-spacing: 1px; margin-bottom: 6px;">ABCDEFGHIJKLMNOPQRSTUVWXYZ</div>
         <p>Unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicative.</p>
 
-        <div class="tet-h3">H3 Secondary Component (${nodeData.id})</div>
+        <div class="tet-h3">H3 secondary component (${nodeData.id})</div>
         <p>Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.</p>
 
         <div class="tet-quote">
           "The Poetics are what you show, the Codex is how you build."
         </div>
 
-        <p style="margin-top:12px; font-weight: bold; color: #888;">State Verification Protocol:</p>
+        <p style="margin-top:12px; font-weight: bold; color: var(--visited-link);">State verification protocol:</p>
         <ul class="tet-checklist">
           <li><input type="checkbox" checked disabled> Resonance density locked in Tet-BLOC</li>
           <li><input type="checkbox" disabled> Void Blade geometric filter applied</li>
@@ -547,7 +367,7 @@
         <div class="tet-symbol">ştz</div>
 
         <div class="tet-footer">
-          Intake • Dashboard • ${nodeData.stage} • SYS // The Chasis
+          Intake • Dashboard • ${nodeData.stage} • SYS // The Chassis
         </div>
       `;
 
@@ -557,14 +377,13 @@
 
     function closePanel() {
       document.getElementById('tet-panel').classList.remove('active');
+      clearHighlights();
     }
 
     window.addEventListener('resize', () => {
-      width = frameEl.clientWidth;
-      height = frameEl.clientHeight;
+      width = viewport.clientWidth;
+      height = viewport.clientHeight;
       simulation.force("center", d3.forceCenter(width / 2, height / 2));
-      simulation.force("magnetX", d3.forceX(width / 2).strength(0.06));
-      simulation.force("magnetY", d3.forceY(height / 2).strength(0.06));
       simulation.alpha(0.3).restart();
     });
   </script>

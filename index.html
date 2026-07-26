@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>fluidCymatics.dev — Studio & Codex Engine</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css">
+  <style>
+    :root {
+      --bg-color: #0d0d0d;
+      --card-bg: #141414;
+      --accent-gold: #d4af37;
+      --accent-gold-hover: #f3e5ab;
+      --header-color: #e6e6e6;
+      --text-muted: #888888;
+      --border-color: #262626;
+      --link-color: #d4af37;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: var(--bg-color);
+      color: #b0b0b0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      min-height: 100vh;
+      width: 100vw;
+      overflow-x: hidden;
+    }
+
+    /* Master Outer Wrapper */
+    #app {
+      position: relative;
+      width: 100%;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: radial-gradient(circle at center, #181818 0%, #080808 100%);
+    }
+
+    /* Page Sections Container */
+    .content-stream {
+      width: 100%;
+      max-width: 1100px;
+      padding: 40px 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 36px;
+      z-index: 1;
+    }
+
+    /* Brand Logo Block */
+    .logo-wrapper {
+      margin-bottom: 8px;
+    }
+    .logo-wrapper img {
+      max-width: 220px;
+      height: auto;
+      display: block;
+    }
+
+    /* Bio Block */
+    .bio-text {
+      text-align: center;
+      max-width: 680px;
+    }
+    .bio-text h1 {
+      color: var(--header-color);
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+    .bio-text p {
+      font-size: 14px;
+      line-height: 1.6;
+      color: var(--text-muted);
+    }
+
+    /* D3 Force Graph Frame */
+    .graph-frame {
+      width: 100%;
+      height: 580px;
+      background: rgba(18, 18, 18, 0.7);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
+    }
+
+    svg#graph-canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+      cursor: grab;
+    }
+    svg#graph-canvas:active { cursor: grabbing; }
+
+    /* SVG Graph Elements */
+    .link { stroke: #2a2a2a; stroke-opacity: 0.85; stroke-width: 1.5px; }
+    .node { cursor: pointer; transition: transform 0.2s ease; }
+    .node circle {
+      fill: #141414;
+      stroke: var(--accent-gold);
+      stroke-width: 2px;
+      transition: fill 0.2s, stroke-width 0.2s;
+    }
+    .node:hover circle {
+      fill: #222222;
+      stroke: var(--accent-gold-hover);
+      stroke-width: 3.5px;
+      filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.7));
+    }
+    .node text {
+      fill: var(--accent-gold);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.8px;
+      pointer-events: none;
+      text-anchor: middle;
+      dominant-baseline: central;
+      text-transform: uppercase;
+    }
+
+    /* Wave Graphic */
+    .wave-graphic {
+      width: 100%;
+      max-width: 720px;
+      display: flex;
+      justify-content: center;
+      margin: 12px 0;
+    }
+    .wave-graphic img {
+      width: 100%;
+      height: auto;
+      opacity: 0.85;
+    }
+
+    /* Stockhausen Quote Block */
+    .quote-block {
+      max-width: 680px;
+      text-align: center;
+      padding: 0 20px;
+    }
+    .quote-block blockquote {
+      font-size: 15px;
+      font-style: italic;
+      line-height: 1.7;
+      color: #cccccc;
+      margin-bottom: 10px;
+    }
+    .quote-block cite {
+      font-size: 12px;
+      color: var(--accent-gold);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      font-style: normal;
+      font-weight: 600;
+    }
+
+    /* Nav Footer */
+    .nav-links {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      margin-top: 12px;
+      padding-top: 20px;
+      border-top: 1px solid #1a1a1a;
+      width: 100%;
+      justify-content: center;
+    }
+    .nav-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 12px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--accent-gold); }
+    .nav-links .divider { color: #333333; font-size: 12px; }
+
+    /* Slide-out TET Drawer Panel */
+    #tet-panel {
+      width: 560px;
+      max-width: 90vw;
+      height: 100vh;
+      background-color: #121212;
+      border-left: 1px solid var(--border-color);
+      box-shadow: -12px 0 35px rgba(0,0,0,0.9);
+      position: fixed;
+      right: -570px;
+      top: 0;
+      transition: right 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+    }
+    #tet-panel.active { right: 0; }
+
+    .panel-header {
+      padding: 16px 24px;
+      border-bottom: 1px solid #222;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #0a0a0a;
+    }
+    .panel-header-title {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--text-muted);
+      font-weight: 700;
+    }
+    .close-btn {
+      background: none;
+      border: 1px solid #333;
+      color: var(--text-muted);
+      width: 28px;
+      height: 28px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .close-btn:hover { color: #fff; border-color: #666; }
+
+    /* Obsidian TET Styles inside Panel */
+    .tet-container {
+      padding: 32px 28px;
+      overflow-y: auto;
+      flex: 1;
+      font-size: 13.5px;
+      line-height: 1.6;
+    }
+    .tet-tags { display: flex; gap: 6px; margin-bottom: 12px; }
+    .tet-tag {
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      color: var(--text-muted);
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+    .tet-breadcrumbs { font-size: 11px; color: #666; margin-bottom: 24px; }
+    .tet-breadcrumbs a { color: var(--text-muted); text-decoration: none; border-bottom: 1px dotted #444; }
+
+    .kernel-bloc {
+      background: #161616;
+      border-left: 3px solid var(--accent-gold);
+      padding: 12px 16px;
+      border-radius: 2px;
+      margin: 18px 0;
+      font-size: 12.5px;
+      display: flex;
+      gap: 12px;
+    }
+    .insignia-icon { font-size: 18px; line-height: 1; }
+    .guardrail-bloc { background: #1a1212; border-left-color: #aa3333; }
+    .volatility-bloc { background: #1a1812; border-left-color: #d48837; }
+
+    .tet-h1 { color: #f0f0f0; font-size: 20px; font-weight: 700; margin-bottom: 12px; text-transform: uppercase; }
+    .tet-h2 { color: var(--accent-gold); font-size: 15px; font-weight: 600; margin: 24px 0 10px 0; text-transform: uppercase; }
+    .tet-h3 { color: var(--accent-gold); font-size: 13.5px; font-weight: 600; margin: 18px 0 8px 0; }
+    .tet-math { background: #141414; padding: 14px; text-align: center; margin: 18px 0; border-radius: 4px; border: 1px solid #222; }
+    .tet-quote { border-left: 2px solid #444; padding-left: 12px; margin: 14px 0; color: var(--text-muted); font-style: italic; }
+    .tet-checklist { list-style: none; margin: 12px 0; }
+    .tet-checklist li { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; color: var(--text-muted); }
+    .tet-checklist input { accent-color: var(--accent-gold); }
+    .tet-symbol { text-align: center; margin: 28px 0; font-size: 72px; color: #332a15; font-family: serif; user-select: none; }
+    .tet-footer { border-top: 1px solid #222; padding-top: 16px; font-size: 11px; color: #555; text-transform: uppercase; }
+  </style>
+</head>
+<body>
+
+  <div id="app">
+    <div class="content-stream">
+
+      <!-- BRAND LOGO -->
+      <div class="logo-wrapper">
+        <img src="fluidCymatics.png" alt="fluidCymatics.dev">
+      </div>
+
+      <!-- BIO BLOCK -->
+      <div class="bio-text">
+        <h1>Knowledge Systems Architect.</h1>
+        <p>Designing ontologies, graph logic, & custom interfaces for RAG/LLM context routing.</p>
+        <p style="color: var(--header-color); margin-top: 4px;">Joining raw data to fluid structure.</p>
+      </div>
+
+      <!-- GRAPH FRAME -->
+      <div class="graph-frame">
+        <svg id="graph-canvas"></svg>
+      </div>
+
+      <!-- WAVE GRAPHIC -->
+      <div class="wave-graphic">
+        <img src="fluidCymaticsWave.png" alt="Fluid Cymatics Wave Structure">
+      </div>
+
+      <!-- STOCKHAUSEN QUOTE BLOCK -->
+      <div class="quote-block">
+        <blockquote>
+          "Technical progress is only valid if it serves the spiritual evolution of mankind... We must transform sound into something that opens new dimensions of consciousness."
+        </blockquote>
+        <cite>— Karlheinz Stockhausen</cite>
+      </div>
+
+      <!-- NAV FOOTER -->
+      <nav class="nav-links">
+        <a href="#projects">projects</a>
+        <span class="divider">|</span>
+        <a href="#process">process</a>
+        <span class="divider">|</span>
+        <a href="#research">research</a>
+        <span class="divider">|</span>
+        <a href="#contact">contact</a>
+      </nav>
+
+    </div>
+
+    <!-- SLIDE-OUT TET INSPECTOR -->
+    <div id="tet-panel">
+      <div class="panel-header">
+        <span class="panel-header-title">SYS // The Chasis — BLOC Inspector</span>
+        <button class="close-btn" onclick="closePanel()">×</button>
+      </div>
+      <div class="tet-container" id="tet-content">
+        <!-- Dynamic TET Content Injected Here -->
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // --- Typographic Firewall Rule Definition Data ---
+    const rootAxes = ['LINEAGE', 'SYNTHESIS', 'ARTIFACT', 'SYSTEM'];
+    const branchAxes = ['OPTICAL', 'ACOUSTIC'];
+    const states = ['Idea', 'Fracture', 'Gravity', 'Residue'];
+    const phases = ['Capture (NULL -> Idea)', 'Detachment (Idea -> Fracture)', 'Mirroring (Fracture -> Gravity)', 'Artifacting (Gravity -> Residue)'];
+    const tokens = [
+      'Chasis Prime', 'Vessel Vector', 'Resonance Core', 'Null Shift',
+      'Acoustic Lattice', 'Optical Mirror', 'TET Matrix', 'Void Blade',
+      'Octahedron Node', 'Kernel Anchor', 'Signal Drift', 'Poetic Threshold',
+      'Esoteric Code', 'Exoteric Portal', 'Operation Axis', 'Frozen Mass'
+    ];
+
+    const nodesData = Array.from({ length: 16 }, (_, i) => {
+      const root = rootAxes[i % rootAxes.length];
+      const branch = branchAxes[i % branchAxes.length];
+      const token = tokens[i];
+      return {
+        id: `tet-${i + 1}`,
+        code: `${i + 1}-${root[0]}`,
+        root: root,
+        branch: branch,
+        token: token,
+        title: `${i + 1}-${root[0]} ${root} - ${branch} - ${token}`,
+        displayLabel: `${root.slice(0,3)}-${branch.slice(0,3)}-${String(i+1).padStart(2,'0')}`,
+        tag: i % 3 === 0 ? '#EXT' : (i % 2 === 0 ? '#INT' : '#SYS'),
+        state: states[i % states.length],
+        phase: phases[i % phases.length],
+        stage: `Stage ${(i % 4) + 1} The ${['Container', 'Operator', 'Chasis', 'Resonator'][i % 4]}`
+      };
+    });
+
+    // --- Strict Degree-4 Tetrahedral Link Generation ---
+    const linksData = [];
+    const linkSet = new Set();
+
+    function addLink(sourceIdx, targetIdx) {
+      if (sourceIdx === targetIdx) return;
+      const u = Math.min(sourceIdx, targetIdx);
+      const v = Math.max(sourceIdx, targetIdx);
+      const key = `${u}-${v}`;
+      if (!linkSet.has(key)) {
+        linkSet.add(key);
+        linksData.push({ source: nodesData[sourceIdx].id, target: nodesData[targetIdx].id });
+      }
+    }
+
+    for (let i = 0; i < 16; i++) {
+      addLink(i, (i + 1) % 16);
+      addLink(i, (i + 15) % 16);
+      addLink(i, (i + 4) % 16);
+      addLink(i, (i + 12) % 16);
+    }
+
+    // --- D3 Network Graph with Zoom/Pan Engine ---
+    const frameEl = document.querySelector('.graph-frame');
+    let width = frameEl.clientWidth;
+    let height = frameEl.clientHeight;
+
+    const svg = d3.select("#graph-canvas");
+    const container = svg.append("g").attr("class", "graph-container");
+
+    const zoom = d3.zoom()
+      .scaleExtent([0.2, 4])
+      .on("zoom", (event) => {
+        container.attr("transform", event.transform);
+      });
+
+    svg.call(zoom);
+
+    const simulation = d3.forceSimulation(nodesData)
+      .force("link", d3.forceLink(linksData).id(d => d.id).distance(120))
+      .force("charge", d3.forceManyBody().strength(-280))
+      .force("center", d3.forceCenter(width / 2, height / 2))
+      .force("magnetX", d3.forceX(width / 2).strength(0.08))
+      .force("magnetY", d3.forceY(height / 2).strength(0.08));
+
+    const link = container.append("g")
+      .selectAll("line")
+      .data(linksData)
+      .enter().append("line")
+      .attr("class", "link");
+
+    const node = container.append("g")
+      .selectAll(".node")
+      .data(nodesData)
+      .enter().append("g")
+      .attr("class", "node")
+      .call(d3.drag()
+        .on("start", dragstarted)
+        .on("drag", dragged)
+        .on("end", dragended))
+      .on("click", (event, d) => openTet(d));
+
+    node.append("circle").attr("r", 25);
+    node.append("text").text(d => d.displayLabel);
+
+    simulation.on("tick", () => {
+      link
+        .attr("x1", d => d.source.x)
+        .attr("y1", d => d.source.y)
+        .attr("x2", d => d.target.x)
+        .attr("y2", d => d.target.y);
+
+      node
+        .attr("transform", d => `translate(${d.x}, ${d.y})`);
+    });
+
+    function dragstarted(event, d) {
+      if (!event.active) simulation.alphaTarget(0.3).restart();
+      d.fx = d.x; d.fy = d.y;
+    }
+
+    function dragged(event, d) {
+      d.fx = event.x; d.fy = event.y;
+    }
+
+    function dragended(event, d) {
+      if (!event.active) simulation.alphaTarget(0);
+      d.fx = null; d.fy = null;
+    }
+
+    // --- TET Panel Handler ---
+    function openTet(nodeData) {
+      const panel = document.getElementById('tet-panel');
+      const container = document.getElementById('tet-content');
+
+      container.innerHTML = `
+        <div class="tet-tags">
+          <span class="tet-tag">${nodeData.tag}</span>
+          <span class="tet-tag">#${nodeData.root}</span>
+          <span class="tet-tag">#${nodeData.branch}</span>
+          <span class="tet-tag">#SYS</span>
+        </div>
+
+        <div class="tet-breadcrumbs">
+          <a>Intake</a> • <a>Dashboard</a> • <a>${nodeData.stage}</a> • <a>SYS // The Chasis</a>
+        </div>
+
+        <div class="tet-h1">${nodeData.title}</div>
+
+        <div class="kernel-bloc">
+          <span class="insignia-icon">🀄</span>
+          <div>
+            <strong>Kernel BLOC:</strong> High-density center of mass for ${nodeData.token}. Positioned along axis <strong>${nodeData.root}</strong> under functional state <strong>${nodeData.state}</strong>.
+          </div>
+        </div>
+
+        <p><strong>Codex Poetics:</strong> To deploy this BLOC, verify alignment against the isotropic vector matrix. This node represents captured mass drifting through <em>${nodeData.phase}</em>.</p>
+
+        <div class="kernel-bloc guardrail-bloc">
+          <span class="insignia-icon">🈲</span>
+          <div>
+            <strong>Critical Guardrail:</strong> Hard operational perimeter. Structural variables are strictly prohibited from escaping origin coordinates without proper Octahedral transit authorization.
+          </div>
+        </div>
+
+        <div class="tet-h2">Systemic Breakdown - ${nodeData.branch}</div>
+        <p>If you ever want to test font vectors or spatial balance for this specific BLOC outside of Obsidian, utilize external vector analysis engines:</p>
+        <ul style="margin-left: 20px; margin-top: 8px;">
+          <li><strong style="color:var(--accent-gold)">Fontjoy.com:</strong> Instant header/body pairings on dark canvas.</li>
+          <li><strong style="color:var(--accent-gold)">Typeconnection.com:</strong> Structural matrix engine for typography classification.</li>
+        </ul>
+
+        <div class="tet-math" id="math-${nodeData.id}"></div>
+
+        <div class="kernel-bloc volatility-bloc">
+          <span class="insignia-icon">🈚</span>
+          <div>
+            <strong>Active Progress Block:</strong> Layout schema currently in active processing state. Subject to sudden fragmentation as structural system realigns.
+          </div>
+        </div>
+
+        <div class="tet-h2">Quick Brown Fox Jumped Over the Fence</div>
+        <div style="font-weight: 700; color: var(--accent-gold); letter-spacing: 1px; margin-bottom: 6px;">ABCDEFGHIJKLMNOPQRSTUVWXYZ</div>
+        <p>Unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicative.</p>
+
+        <div class="tet-h3">H3 Secondary Component (${nodeData.id})</div>
+        <p>Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.</p>
+
+        <div class="tet-quote">
+          "The Poetics are what you show, the Codex is how you build."
+        </div>
+
+        <p style="margin-top:12px; font-weight: bold; color: #888;">State Verification Protocol:</p>
+        <ul class="tet-checklist">
+          <li><input type="checkbox" checked disabled> Resonance density locked in Tet-BLOC</li>
+          <li><input type="checkbox" disabled> Void Blade geometric filter applied</li>
+        </ul>
+
+        <div class="tet-symbol">ştz</div>
+
+        <div class="tet-footer">
+          Intake • Dashboard • ${nodeData.stage} • SYS // The Chasis
+        </div>
+      `;
+
+      katex.render(`P(X_{n+1} \\mid X_n) = P(X_{n+1})`, document.getElementById(`math-${nodeData.id}`));
+      panel.classList.add('active');
+    }
+
+    function closePanel() {
+      document.getElementById('tet-panel').classList.remove('active');
+    }
+
+    window.addEventListener('resize', () => {
+      width = frameEl.clientWidth;
+      height = frameEl.clientHeight;
+      simulation.force("center", d3.forceCenter(width / 2, height / 2));
+      simulation.force("magnetX", d3.forceX(width / 2).strength(0.08));
+      simulation.force("magnetY", d3.forceY(height / 2).strength(0.08));
+      simulation.alpha(0.3).restart();
+    });
+  </script>
+</body>
+</html>

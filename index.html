@@ -3,389 +3,480 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>fluidCymatics.dev — Studio & Codex Engine</title>
+  <title>fluidCymatics.dev</title>
+  
   <link rel="stylesheet" href="styles.css">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.js"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css">
+
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+      }
+    }
+  </script>
 </head>
 <body>
 
-  <!-- DYNAMIC SHRINKING HEADER BANNER -->
-  <header id="hero-banner">
-    <div class="banner-content">
-      <img src="fluidCymatics.dev.png" alt="fluidCymatics.dev" class="brand-logo-img">
-      <div class="brand-subtext">// Knowledge systems architecture</div>
+  <!-- WebGL Render Canvas Target -->
+  <div id="scene-container"></div>
+
+  <!-- HTML Labels Projected from 3D Space -->
+  <div id="labels-container"></div>
+
+  <!-- Persistent Header Banner -->
+  <header id="ui-header">
+    <div class="brand-wrapper">
+      <img src="fluidCymatics-Studio.png" alt="fluidCymatics Logo" class="brand-logo-img">
+      <div class="brand-text-block">
+        <div class="brand-line-2">Spatial &amp; Structural Mechanics</div>
+        <div class="brand-line-3">Patterning raw information through field geometry, material logic, and fluid systems.</div>
+      </div>
     </div>
   </header>
 
-  <div id="app">
-    <!-- FULL 100VW x 100VH FLY-THROUGH GRAPH VIEWPORT -->
-    <div class="graph-viewport">
-      <svg id="graph-canvas"></svg>
+  <!-- Persistent Footer Bar -->
+  <footer id="ui-footer">
+    <p class="footer-quote">
+      "Technical progress is only valid if it serves the spiritual evolution of mankind... We must transform sound into something that opens new dimensions of consciousness." 
+      <span>&mdash; Karlheinz Stockhausen</span>
+    </p>
+  </footer>
+
+  <!-- Slide-out Node Inspector Reading Trough (720px) -->
+  <div id="inspector-panel">
+    <div class="panel-header">
+      <span class="panel-title" id="panel-node-title">Node Metadata</span>
+      <span class="close-btn" id="panel-close">&times;</span>
     </div>
-
-    <!-- CONTENT STREAM BELOW CANVAS -->
-    <div class="content-stream">
-
-      <div class="bio-text">
-        <h1>Knowledge Systems Architect.</h1>
-        <p>Designing ontologies, graph logic, & custom interfaces for RAG/LLM context routing.</p>
-        <p style="color: var(--cahier); margin-top: 4px;">Joining raw data to fluid structure.</p>
-      </div>
-
-      <div class="wave-graphic">
-        <img src="fluidCymaticsWave.png" alt="Fluid Cymatics Wave Structure">
-      </div>
-
-      <div class="quote-block">
-        <blockquote>
-          "Technical progress is only valid if it serves the spiritual evolution of mankind... We must transform sound into something that opens new dimensions of consciousness."
-        </blockquote>
-        <cite>— Karlheinz Stockhausen</cite>
-      </div>
-
-      <nav class="nav-links">
-        <a href="#projects">projects</a>
-        <span class="divider">|</span>
-        <a href="#process">process</a>
-        <span class="divider">|</span>
-        <a href="#research">research</a>
-        <span class="divider">|</span>
-        <a href="#contact">contact</a>
-      </nav>
-
-    </div>
-
-    <!-- SAGAN FOOTER ROW -->
-    <footer class="site-footer">
-      <div class="sagan-quote">
-        "The cosmos is within us. We are made of star-stuff. We are a way for the cosmos to know itself." — Carl Sagan
-      </div>
-    </footer>
-
-    <!-- SLIDE-OUT TET INSPECTOR -->
-    <div id="tet-panel">
-      <div class="panel-header">
-        <span class="panel-header-title">SYS // The Chassis — BLOC inspector</span>
-        <button class="close-btn" onclick="closePanel()">×</button>
-      </div>
-      <div class="tet-container" id="tet-content">
-        <!-- Dynamic TET Content Injected Here -->
-      </div>
+    <div class="panel-body" id="panel-node-content">
+      Select a node within the Isotropic Vector Matrix to inspect structural coordinates and phase transition dynamics.
     </div>
   </div>
 
-  <script>
-    // --- Shrinking Banner Scroll Handler ---
-    const banner = document.getElementById('hero-banner');
-    window.addEventListener('scroll', () => {
-      if (window.scrollY > 40) {
-        banner.classList.add('shrunk');
-      } else {
-        banner.classList.remove('shrunk');
-      }
-    });
+  <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+    import { DragControls } from 'three/addons/controls/DragControls.js';
 
-    // --- Isotropic Tetrahedral Node Matrix (64 Nodes) ---
-    const rootAxes = ['LINEAGE', 'SYNTHESIS', 'ARTIFACT', 'SYSTEM'];
-    const branchAxes = ['OPTICAL', 'ACOUSTIC', 'KINETIC', 'STATIC'];
-    const states = ['Idea', 'Fracture', 'Gravity', 'Residue'];
-    const phases = [
-      'Capture (NULL -> Idea)', 
-      'Detachment (Idea -> Fracture)', 
-      'Mirroring (Fracture -> Gravity)', 
-      'Artifacting (Gravity -> Residue)'
-    ];
-    const tokens = [
-      'Chassis Prime', 'Vessel Vector', 'Resonance Core', 'Null Shift',
-      'Acoustic Lattice', 'Optical Mirror', 'TET Matrix', 'Void Blade',
-      'Octahedron Node', 'Kernel Anchor', 'Signal Drift', 'Poetic Threshold',
-      'Esoteric Code', 'Exoteric Portal', 'Operation Axis', 'Frozen Mass'
-    ];
-
-    const nodesData = Array.from({ length: 64 }, (_, i) => {
-      const root = rootAxes[i % rootAxes.length];
-      const branch = branchAxes[i % branchAxes.length];
-      const token = tokens[i % tokens.length];
-      const codeNum = String(i + 1).padStart(2, '0');
-      return {
-        id: `tet-${i + 1}`,
-        index: i,
-        code: `${i + 1}-${root[0]}`,
-        root: root,
-        branch: branch,
-        token: token,
-        title: `${codeNum}-${root[0]} ${root} - ${branch} - ${token}`,
-        displayLabel: `${root} — ${token}`,
-        tag: i % 4 === 0 ? '#EXT' : (i % 3 === 0 ? '#INT' : '#SYS'),
-        state: states[i % states.length],
-        phase: phases[i % phases.length],
-        stage: `Stage ${(i % 4) + 1} System Lattice`
-      };
-    });
-
-    // --- Strict Degree-4 Isotropic Vector Matrix Topology ---
-    const linksData = [];
-    const linkSet = new Set();
-
-    function addLink(sourceIdx, targetIdx) {
-      if (sourceIdx === targetIdx) return;
-      const u = Math.min(sourceIdx, targetIdx);
-      const v = Math.max(sourceIdx, targetIdx);
-      const key = `${u}-${v}`;
-      if (!linkSet.has(key)) {
-        linkSet.add(key);
-        linksData.push({ source: nodesData[sourceIdx].id, target: nodesData[targetIdx].id });
+    /* =========================================================================
+       DYNAMIC HEADER HEIGHT TRACKING (Seamless 1px Border Overlap)
+       ========================================================================= */
+    const headerEl = document.getElementById('ui-header');
+    
+    function syncHeaderHeight() {
+      if (headerEl) {
+        const headerHeight = headerEl.offsetHeight;
+        document.documentElement.style.setProperty('--header-height', `${headerHeight}px`);
       }
     }
 
-    for (let i = 0; i < 64; i++) {
-      addLink(i, (i + 1) % 64);
-      addLink(i, (i + 4) % 64);
-      addLink(i, (i + 16) % 64);
-      addLink(i, (i + 20) % 64);
+    syncHeaderHeight();
+    window.addEventListener('resize', syncHeaderHeight);
+
+    const logoImg = document.querySelector('.brand-logo-img');
+    if (logoImg) {
+      logoImg.addEventListener('load', syncHeaderHeight);
     }
 
-    // --- Expanded Fly-Through Isotropic Force Engine ---
-    const viewport = document.querySelector('.graph-viewport');
-    let width = viewport.clientWidth;
-    let height = viewport.clientHeight;
+    /* =========================================================================
+       MODULE 1: SCENE SETUP & LIGHTING ENGINE
+       ========================================================================= */
+    const container = document.getElementById('scene-container');
+    const labelsContainer = document.getElementById('labels-container');
+    
+    const scene = new THREE.Scene();
 
-    const svg = d3.select("#graph-canvas");
+    const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.set(0, 0, 18);
 
-    const defs = svg.append("defs");
-    defs.append("marker")
-      .attr("id", "arrow-active")
-      .attr("viewBox", "0 -5 10 10")
-      .attr("refX", 10)
-      .attr("refY", 0)
-      .attr("markerWidth", 5)
-      .attr("markerHeight", 5)
-      .attr("orient", "auto")
-      .append("path")
-      .attr("d", "M0,-5L10,0L0,5");
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    container.appendChild(renderer.domElement);
 
-    const container = svg.append("g").attr("class", "graph-container");
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.05;
 
-    const zoom = d3.zoom()
-      .scaleExtent([0.05, 12])
-      .on("zoom", (event) => {
-        container.attr("transform", event.transform);
-        const k = event.transform.k;
-        const opacity = Math.min(1, Math.max(0.08, (k - 0.2) * 1.2));
-        d3.selectAll(".node-label").style("opacity", opacity);
+    const ambientLight = new THREE.AmbientLight(0x777777, 0.7);
+    scene.add(ambientLight);
+
+    const keyLight = new THREE.DirectionalLight(0xffffff, 1.3);
+    keyLight.position.set(12, 18, 15);
+    scene.add(keyLight);
+
+    const rimLight = new THREE.DirectionalLight(0xD9D9D9, 0.6);
+    rimLight.position.set(-10, -10, -10);
+    scene.add(rimLight);
+
+    /* =========================================================================
+       MODULE 2: STARFIELD BACKGROUND PARTICLE SYSTEM
+       ========================================================================= */
+    function createSoftStarTexture() {
+      const canvas = document.createElement('canvas');
+      canvas.width = 64;
+      canvas.height = 64;
+      const ctx = canvas.getContext('2d');
+
+      const grad = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+      grad.addColorStop(0, 'rgba(255, 255, 255, 1.0)');
+      grad.addColorStop(0.25, 'rgba(183, 160, 124, 0.5)');
+      grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, 64, 64);
+
+      const tex = new THREE.CanvasTexture(canvas);
+      tex.needsUpdate = true;
+      return tex;
+    }
+
+    const starCount = 800;
+    const starGeo = new THREE.BufferGeometry();
+    const starPositions = new Float32Array(starCount * 3);
+
+    for (let i = 0; i < starCount * 3; i += 3) {
+      starPositions[i]     = (Math.random() - 0.5) * 120;
+      starPositions[i + 1] = (Math.random() - 0.5) * 120;
+      starPositions[i + 2] = (Math.random() - 0.5) * 120;
+    }
+
+    starGeo.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
+    const starMat = new THREE.PointsMaterial({ 
+      color: 0xACACAC, 
+      size: 0.4, 
+      map: createSoftStarTexture(),
+      transparent: true, 
+      opacity: 0.45,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending
+    });
+    const starField = new THREE.Points(starGeo, starMat);
+    scene.add(starField);
+
+    /* =========================================================================
+       MODULE 3: DATA MATRIX GRAPH & MATERIALS (CONTENT DECOUPLED)
+       ========================================================================= */
+    const graphGroup = new THREE.Group();
+    graphGroup.position.x = -6.0;
+    scene.add(graphGroup);
+
+    const nodeDataBlocks = [
+      { id: 'n1', label: 'ENGAGE - Esoteric Code', pos: [-4, 3, 1], url: 'content/n1-esoteric-code.html' },
+      { id: 'n2', label: 'SYNTHESIS - Esoteric Portal', pos: [-1, 3, 2], url: 'content/n2-esoteric-portal.html' },
+      { id: 'n3', label: 'ARTIFACT - Operation Aids', pos: [2, 3, 0], url: 'content/n3-operation-aids.html' },
+      { id: 'n4', label: 'SYSTEM - Primary Locus', pos: [5, 3, -1], url: 'content/n4-primary-locus.html' },
+      { id: 'n5', label: 'ENGAGE - Acoustic Prime', pos: [-3, 1.5, 3], url: 'content/n5-acoustic-prime.html' },
+      { id: 'n6', label: 'SYNTHESIS - Optical Mirror', pos: [0, 1.5, 1], url: 'content/n6-optical-mirror.html' },
+      { id: 'n7', label: 'ARTIFACT - TET Matrix', pos: [3, 1.5, 2], url: 'content/n7-tet-matrix.html' },
+      { id: 'n8', label: 'SYSTEM - Tactical Threshold', pos: [6, 1.5, 0], url: 'content/n8-tactical-threshold.html' },
+      { id: 'n9', label: 'ENGAGE - Octahedron Node', pos: [-5, 0, 0], url: 'content/n9-octahedron-node.html' },
+      { id: 'n10', label: 'SYNTHESIS - Vessel Vector', pos: [-2, 0, -2], url: 'content/n10-vessel-vector.html' },
+      { id: 'n11', label: 'ARTIFACT - Resistance Core', pos: [1, 0, -1], url: 'content/n11-resistance-core.html' },
+      { id: 'n12', label: 'SYSTEM - Void Blade', pos: [4, 0, 1], url: 'content/n12-void-blade.html' },
+      { id: 'n13', label: 'ENGAGE - Chladni Lattice', pos: [-3, -1.5, 2], url: 'content/n13-chladni-lattice.html' },
+      { id: 'n14', label: 'SYNTHESIS - Wavelet Generator', pos: [0, -1.5, -1], url: 'content/n14-wavelet-generator.html' },
+      { id: 'n15', label: 'ARTIFACT - Enclosure Core', pos: [3, -1.5, -2], url: 'content/n15-enclosure-core.html' },
+      { id: 'n16', label: 'SYSTEM - Null Shift', pos: [5.5, -1.5, 0], url: 'content/n16-null-shift.html' },
+      { id: 'n17', label: 'ENGAGE - Resonant Anchor', pos: [-4, -3, -1], url: 'content/n17-resonant-anchor.html' },
+      { id: 'n18', label: 'SYNTHESIS - Phase Intercept', pos: [-1, -3, 1], url: 'content/n18-phase-intercept.html' },
+      { id: 'n19', label: 'ARTIFACT - Null Shield', pos: [2, -3, 0], url: 'content/n19-null-shield.html' },
+      { id: 'n20', label: 'SYSTEM - Force Threshold', pos: [6.5, -0.5, 2], url: 'content/n20-force-threshold.html' }
+    ];
+
+    const visibleGeo = new THREE.SphereGeometry(0.32, 32, 32);
+    const hitTargetGeo = new THREE.SphereGeometry(0.9, 16, 16);
+    const hitTargetMat = new THREE.MeshBasicMaterial({ visible: false });
+
+    const matRegular = new THREE.MeshStandardMaterial({ color: 0xACACAC, roughness: 0.25, metalness: 0.3 });
+    const matHover   = new THREE.MeshStandardMaterial({ color: 0xFFFFFF, emissive: 0x443015, roughness: 0.1, metalness: 0.2 });
+    const matAdjacent= new THREE.MeshStandardMaterial({ color: 0xB7A07C, emissive: 0x1a1208, roughness: 0.2, metalness: 0.3 });
+
+    const lineMatRegular   = new THREE.LineBasicMaterial({ color: 0x5A5A5A, transparent: true, opacity: 0.4 });
+    const lineMatHighlight = new THREE.LineBasicMaterial({ color: 0xB78942, transparent: true, opacity: 0.95 });
+
+    const nodeParents = [];
+    const nodeMeshes = [];
+    const hitTargets = [];
+    const labelElements = [];
+    const edges = [];
+
+    nodeDataBlocks.forEach(data => {
+      const nodeParent = new THREE.Group();
+      nodeParent.position.set(...data.pos);
+
+      const visibleMesh = new THREE.Mesh(visibleGeo, matRegular.clone());
+      visibleMesh.userData = data;
+      nodeParent.add(visibleMesh);
+
+      const hitMesh = new THREE.Mesh(hitTargetGeo, hitTargetMat);
+      hitMesh.userData = { parentMesh: visibleMesh, data: data };
+      nodeParent.add(hitMesh);
+
+      graphGroup.add(nodeParent);
+
+      nodeParents.push(nodeParent);
+      nodeMeshes.push(visibleMesh);
+      hitTargets.push(hitMesh);
+
+      const label = document.createElement('div');
+      label.className = 'node-label';
+      label.textContent = data.label;
+      label.dataset.id = data.id;
+      labelsContainer.appendChild(label);
+
+      label.addEventListener('click', (e) => {
+        e.stopPropagation();
+        openInspector(data);
       });
 
-    svg.call(zoom);
-
-    svg.on("click", (event) => {
-      if (event.target.tagName === 'svg') {
-        clearHighlights();
-        closePanel();
-      }
-    });
-
-    const simulation = d3.forceSimulation(nodesData)
-      .force("link", d3.forceLink(linksData).id(d => d.id).distance(180).strength(0.85))
-      .force("charge", d3.forceManyBody().strength(-280))
-      .force("center", d3.forceCenter(width / 2, height / 2))
-      .force("collide", d3.forceCollide().radius(28).strength(0.8));
-
-    const link = container.append("g")
-      .attr("class", "links")
-      .selectAll("line")
-      .data(linksData)
-      .enter().append("line")
-      .attr("class", "link");
-
-    const node = container.append("g")
-      .attr("class", "nodes")
-      .selectAll(".node")
-      .data(nodesData)
-      .enter().append("g")
-      .attr("class", "node")
-      .call(d3.drag()
-        .on("start", dragstarted)
-        .on("drag", dragged)
-        .on("end", dragended))
-      .on("click", (event, d) => {
-        event.stopPropagation();
-        highlightTracePath(d);
-        openTet(d);
-      })
-      .on("mouseover", (event, d) => {
-        if (!selectedNode) highlightTracePath(d, true);
-      })
-      .on("mouseout", () => {
-        if (!selectedNode) clearHighlights();
+      label.addEventListener('dblclick', (e) => {
+        e.stopPropagation();
+        label.style.display = 'none';
+        visibleMesh.visible = false;
       });
 
-    node.append("circle")
-      .attr("class", "node-dot")
-      .attr("r", 2.5);
-
-    node.append("text")
-      .attr("class", "node-label")
-      .attr("dx", 7)
-      .attr("dy", 2)
-      .text(d => d.displayLabel);
-
-    simulation.on("tick", () => {
-      link
-        .attr("x1", d => d.source.x)
-        .attr("y1", d => d.source.y)
-        .attr("x2", d => d.target.x)
-        .attr("y2", d => d.target.y);
-
-      node
-        .attr("transform", d => `translate(${d.x}, ${d.y})`);
+      labelElements.push({ element: label, mesh: visibleMesh });
     });
 
-    let selectedNode = null;
+    for (let i = 0; i < nodeMeshes.length; i++) {
+      for (let j = i + 1; j < nodeMeshes.length; j++) {
+        const posA = new THREE.Vector3();
+        const posB = new THREE.Vector3();
+        nodeMeshes[i].getWorldPosition(posA);
+        nodeMeshes[j].getWorldPosition(posB);
 
-    function highlightTracePath(targetNode, isHover = false) {
-      if (!isHover) selectedNode = targetNode;
+        const dist = posA.distanceTo(posB);
+        if (dist < 4.2) {
+          const localA = graphGroup.worldToLocal(posA.clone());
+          const localB = graphGroup.worldToLocal(posB.clone());
 
-      const connectedNodeIds = new Set([targetNode.id]);
-      
-      link.classed("highlighted", false)
-          .classed("dimmed", true)
-          .attr("marker-end", null);
-
-      link.each(function(l) {
-        const sourceId = typeof l.source === 'object' ? l.source.id : l.source;
-        const targetId = typeof l.target === 'object' ? l.target.id : l.target;
-
-        if (sourceId === targetNode.id || targetId === targetNode.id) {
-          d3.select(this)
-            .classed("highlighted", true)
-            .classed("dimmed", false)
-            .attr("marker-end", "url(#arrow-active)");
+          const lineGeo = new THREE.BufferGeometry().setFromPoints([localA, localB]);
+          const line = new THREE.Line(lineGeo, lineMatRegular.clone());
           
-          connectedNodeIds.add(sourceId);
-          connectedNodeIds.add(targetId);
+          graphGroup.add(line);
+          edges.push({ 
+            line: line, 
+            nodeA: nodeMeshes[i], 
+            nodeB: nodeMeshes[j],
+            parentA: nodeParents[i],
+            parentB: nodeParents[j]
+          });
         }
-      });
-
-      node.classed("active-focus", d => d.id === targetNode.id)
-          .classed("dimmed", d => !connectedNodeIds.has(d.id));
+      }
     }
+
+    /* =========================================================================
+       MODULE 4: DRAG CONTROLS (DYNAMIC NODE RE-POSITIONING)
+       ========================================================================= */
+    const dragControls = new DragControls(nodeParents, camera, renderer.domElement);
+    let isDragging = false;
+
+    dragControls.addEventListener('dragstart', function () {
+      controls.enabled = false;
+      isDragging = true;
+    });
+
+    dragControls.addEventListener('dragend', function () {
+      controls.enabled = true;
+      isDragging = false;
+    });
+
+    function updateEdgeLines() {
+      const posA = new THREE.Vector3();
+      const posB = new THREE.Vector3();
+
+      edges.forEach(edge => {
+        edge.nodeA.getWorldPosition(posA);
+        edge.nodeB.getWorldPosition(posB);
+
+        const localA = graphGroup.worldToLocal(posA.clone());
+        const localB = graphGroup.worldToLocal(posB.clone());
+
+        edge.line.geometry.setFromPoints([localA, localB]);
+        edge.line.geometry.attributes.position.needsUpdate = true;
+      });
+    }
+
+    /* =========================================================================
+       MODULE 5: INSPECTOR PANEL CONTROL & DYNAMIC CONTENT FETCH
+       ========================================================================= */
+    const panel = document.getElementById('inspector-panel');
+    const panelTitle = document.getElementById('panel-node-title');
+    const panelContent = document.getElementById('panel-node-content');
+    const panelClose = document.getElementById('panel-close');
+
+    async function openInspector(data) {
+      if (!data) return;
+      
+      panelTitle.textContent = data.label || 'Node Metadata';
+      panelContent.innerHTML = '<div style="opacity: 0.5;">Loading node parameters...</div>';
+      panel.classList.add('open');
+
+      if (data.url) {
+        try {
+          const response = await fetch(data.url);
+          if (!response.ok) throw new Error('File not found');
+          const htmlText = await response.text();
+          panelContent.innerHTML = htmlText;
+        } catch (err) {
+          panelContent.innerHTML = `<p style="color: var(--color-cahier);">Initial parameters pending configuration for node: <strong>${data.label}</strong>.</p>`;
+        }
+      } else if (data.desc) {
+        panelContent.textContent = data.desc;
+      }
+    }
+
+    function closeInspector() {
+      panel.classList.remove('open');
+    }
+
+    if (panelClose) {
+      panelClose.addEventListener('click', closeInspector);
+    }
+
+    /* =========================================================================
+       MODULE 6: RAYCASTING & HIGHLIGHT ENGINE
+       ========================================================================= */
+    const raycaster = new THREE.Raycaster();
+    const mouse = new THREE.Vector2(-1000, -1000);
+    let hoveredHitTarget = null;
+
+    window.addEventListener('mousemove', (e) => {
+      mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+      mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+    });
 
     function clearHighlights() {
-      selectedNode = null;
-      link.classed("highlighted", false)
-          .classed("dimmed", false)
-          .attr("marker-end", null);
-      node.classed("active-focus", false)
-          .classed("dimmed", false);
+      nodeMeshes.forEach(m => m.material = matRegular);
+      labelElements.forEach(l => {
+        l.element.classList.remove('active', 'adjacent');
+      });
+      edges.forEach(e => e.line.material = lineMatRegular);
     }
 
-    function dragstarted(event, d) {
-      if (!event.active) simulation.alphaTarget(0.3).restart();
-      d.fx = d.x; d.fy = d.y;
-    }
-
-    function dragged(event, d) {
-      d.fx = event.x; d.fy = event.y;
-    }
-
-    // --- STICKY DRAG PINNING ---
-    function dragended(event, d) {
-      if (!event.active) simulation.alphaTarget(0);
-      d.fx = d.x; 
-      d.fy = d.y;
-    }
-
-    function openTet(nodeData) {
-      const panel = document.getElementById('tet-panel');
-      const container = document.getElementById('tet-content');
-
-      container.innerHTML = `
-        <div class="tet-tags">
-          <span class="tet-tag">${nodeData.tag}</span>
-          <span class="tet-tag">#${nodeData.root}</span>
-          <span class="tet-tag">#${nodeData.branch}</span>
-          <span class="tet-tag">#SYS</span>
-        </div>
-
-        <div class="tet-breadcrumbs">
-          <a>Intake</a> • <a>Dashboard</a> • <a>${nodeData.stage}</a> • <a>SYS // The Chassis</a>
-        </div>
-
-        <div class="tet-h1">${nodeData.title}</div>
-
-        <div class="kernel-bloc">
-          <span class="insignia-icon">🀄</span>
-          <div>
-            <strong>Kernel BLOC:</strong> High-density center of mass for ${nodeData.token}. Positioned along axis <strong>${nodeData.root}</strong> under functional state <strong>${nodeData.state}</strong>.
-          </div>
-        </div>
-
-        <p><strong>Codex Poetics:</strong> To deploy this BLOC, verify alignment against the isotropic vector matrix. This node represents captured mass drifting through <em>${nodeData.phase}</em>.</p>
-
-        <div class="kernel-bloc guardrail-bloc">
-          <span class="insignia-icon">🈲</span>
-          <div>
-            <strong>Critical Guardrail:</strong> Hard operational perimeter. Structural variables are strictly prohibited from escaping origin coordinates without proper Octahedral transit authorization.
-          </div>
-        </div>
-
-        <div class="tet-h2">Systemic breakdown - ${nodeData.branch}</div>
-        <p>If you ever want to test font vectors or spatial balance for this specific BLOC outside of Obsidian, utilize external vector analysis engines:</p>
-        <ul style="margin-left: 20px; margin-top: 8px;">
-          <li><strong style="color:var(--accent)">Fontjoy.com:</strong> Instant header/body pairings on dark canvas.</li>
-          <li><strong style="color:var(--accent)">Typeconnection.com:</strong> Structural matrix engine for typography classification.</li>
-        </ul>
-
-        <div class="tet-math" id="math-${nodeData.id}"></div>
-
-        <div class="kernel-bloc volatility-bloc">
-          <span class="insignia-icon">🈚</span>
-          <div>
-            <strong>Active Progress Block:</strong> Layout schema currently in active processing state. Subject to sudden fragmentation as structural system realigns.
-          </div>
-        </div>
-
-        <div class="tet-h2">Quick brown fox jumped over the fence</div>
-        <div style="font-weight: 700; color: var(--accent); letter-spacing: 1px; margin-bottom: 6px;">ABCDEFGHIJKLMNOPQRSTUVWXYZ</div>
-        <p>Unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicative.</p>
-
-        <div class="tet-h3">H3 secondary component (${nodeData.id})</div>
-        <p>Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.</p>
-
-        <div class="tet-quote">
-          "The Poetics are what you show, the Codex is how you build."
-        </div>
-
-        <p style="margin-top:12px; font-weight: bold; color: var(--visited-link);">State verification protocol:</p>
-        <ul class="tet-checklist">
-          <li><input type="checkbox" checked disabled> Resonance density locked in Tet-BLOC</li>
-          <li><input type="checkbox" disabled> Void Blade geometric filter applied</li>
-        </ul>
-
-        <div class="tet-symbol">ştz</div>
-
-        <div class="tet-footer">
-          Intake • Dashboard • ${nodeData.stage} • SYS // The Chassis
-        </div>
-      `;
-
-      katex.render(`P(X_{n+1} \\mid X_n) = P(X_{n+1})`, document.getElementById(`math-${nodeData.id}`));
-      panel.classList.add('active');
-    }
-
-    function closePanel() {
-      document.getElementById('tet-panel').classList.remove('active');
+    function applyAdjacentHighlights(targetMesh) {
       clearHighlights();
+
+      targetMesh.material = matHover;
+      const activeLabel = labelElements.find(l => l.mesh === targetMesh);
+      if (activeLabel) activeLabel.element.classList.add('active');
+
+      edges.forEach(edge => {
+        if (edge.nodeA === targetMesh || edge.nodeB === targetMesh) {
+          edge.line.material = lineMatHighlight;
+          
+          const neighbor = (edge.nodeA === targetMesh) ? edge.nodeB : edge.nodeA;
+          neighbor.material = matAdjacent;
+
+          const neighborLabel = labelElements.find(l => l.mesh === neighbor);
+          if (neighborLabel) neighborLabel.element.classList.add('adjacent');
+        }
+      });
+    }
+
+    window.addEventListener('click', (e) => {
+      if (e.target.closest('#ui-header') || e.target.closest('#ui-footer') || e.target.closest('#inspector-panel')) return;
+
+      raycaster.setFromCamera(mouse, camera);
+      const intersects = raycaster.intersectObjects(hitTargets.filter(t => t.userData.parentMesh.visible));
+      if (intersects.length > 0) {
+        openInspector(intersects[0].object.userData.data);
+      } else {
+        closeInspector();
+      }
+    });
+
+    window.addEventListener('dblclick', (e) => {
+      if (e.target.closest('#ui-header') || e.target.closest('#ui-footer') || e.target.closest('#inspector-panel')) return;
+
+      raycaster.setFromCamera(mouse, camera);
+      const intersects = raycaster.intersectObjects(hitTargets.filter(t => t.userData.parentMesh.visible));
+      if (intersects.length > 0) {
+        const parentMesh = intersects[0].object.userData.parentMesh;
+        parentMesh.visible = false;
+        
+        const labelObj = labelElements.find(l => l.mesh === parentMesh);
+        if (labelObj) labelObj.element.style.display = 'none';
+      }
+    });
+
+    /* =========================================================================
+       MODULE 7: 3D-TO-2D SCREEN PROJECTION & LOD ENGINE
+       ========================================================================= */
+    const tempV = new THREE.Vector3();
+    const cameraPos = new THREE.Vector3();
+
+    function updateNetworkLOD() {
+      camera.getWorldPosition(cameraPos);
+
+      labelElements.forEach(item => {
+        if (!item.mesh.visible) return;
+
+        item.mesh.getWorldPosition(tempV);
+        const distance = cameraPos.distanceTo(tempV);
+
+        const lodScale = THREE.MathUtils.clamp(1.6 - (distance / 20), 0.4, 1.2);
+        item.mesh.scale.setScalar(lodScale);
+
+        tempV.project(camera);
+        const x = (tempV.x *  .5 + .5) * window.innerWidth;
+        const y = (tempV.y * -.5 + .5) * window.innerHeight;
+
+        item.element.style.left = `${x}px`;
+        item.element.style.top = `${y}px`;
+
+        const labelOpacity = THREE.MathUtils.clamp(2.0 - (distance / 15), 0.25, 1.0);
+        item.element.style.opacity = labelOpacity;
+
+        item.element.style.display = (tempV.z > 1) ? 'none' : 'block';
+      });
     }
 
     window.addEventListener('resize', () => {
-      width = viewport.clientWidth;
-      height = viewport.clientHeight;
-      simulation.force("center", d3.forceCenter(width / 2, height / 2));
-      simulation.alpha(0.3).restart();
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
     });
+
+    /* =========================================================================
+       MODULE 8: ANIMATION LOOP
+       ========================================================================= */
+    function animate() {
+      requestAnimationFrame(animate);
+
+      controls.update();
+
+      raycaster.setFromCamera(mouse, camera);
+      const intersects = raycaster.intersectObjects(hitTargets.filter(t => t.userData.parentMesh.visible));
+
+      if (intersects.length > 0) {
+        const hitObject = intersects[0].object;
+        if (hoveredHitTarget !== hitObject) {
+          hoveredHitTarget = hitObject;
+          applyAdjacentHighlights(hitObject.userData.parentMesh);
+          document.body.style.cursor = 'pointer';
+        }
+      } else {
+        if (hoveredHitTarget) {
+          hoveredHitTarget = null;
+          clearHighlights();
+          document.body.style.cursor = 'default';
+        }
+      }
+
+      if (!isDragging) {
+        graphGroup.rotation.y += 0.0003;
+      }
+      starField.rotation.y += 0.0001;
+
+      updateEdgeLines();
+      updateNetworkLOD();
+      renderer.render(scene, camera);
+    }
+
+    animate();
   </script>
 </body>
 </html>

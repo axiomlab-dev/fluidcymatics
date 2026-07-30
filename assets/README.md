@@ -1,1 +1,1 @@
-# Assets folder
+# assets folder. Images, Vector art, Graphics.

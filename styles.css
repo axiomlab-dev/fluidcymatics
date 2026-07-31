@@ -6,21 +6,20 @@
 
 :root {
   --color-cahier: #B7A07C;      /* B7A07C - Cahier - Headers & Assets */
-  --color-accent-lo: #5F6B4E;   /* 5F6B4E - Moss - Accent Lo */
+  --color-accent-lo: #586C57;   /* 586C57 - Moss - Accent Lo */
   --color-accent-hi: #4A7B7C;   /* 4A7B7C - Teal - Accent Hi */
-  --color-canvas-bg: #171717;  /* 171717 - Black - Canvas Background */
-  --color-callout-bg: #1F1F1D; /* 1F1F1D - Brown - Callouts & HZ Lines */
+  --color-canvas-bg: #080808;  /* 080808 - Black - Canvas Background */
+  --color-callout-bg: #171717; /* 171717 - Brown - Callouts & HZ Lines */
   --color-text-white: #ACACAC;  /* ACACAC - White - Text */
   --color-link: #D9D9D9;        /* D9D9D9 - Link */
   --color-visited: #5A5A5A;     /* 5A5A5A - vLink */
-  --color-obsidian-div: #080808;/* 080808 - Obsidian Parent Div */
 
   --color-bright-white: #FFFFFF;
   --font-mono: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 
   --bg-charcoal: #121212;
   --cahier-tan: #B7A07C;
-  --moss-green: #5F6B4E;
+  --moss-green: #586C57;
   --cymatic-teal: #4A7B7C;
 
   --node-idle: var(--moss-green);
@@ -71,7 +70,7 @@ body {
   display: flex;
   align-items: center;
   padding: 16px 32px;
-  background: var(--color-callout-bg);
+  background: var(--color-canvas-bg);
   border-bottom: 1px solid #B7A07C;
   pointer-events: auto;
 }

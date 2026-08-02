@@ -78,13 +78,16 @@ body {
   transition: height 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* Flush-Left Asset Container */
+/* Optional: Smooth Vignette Fade into Canvas Background */
 .banner-left-asset {
   height: 100%;
   display: flex;
   align-items: center;
   flex-shrink: 0;
   background-color: var(--color-canvas-bg);
+  /* Fades the right edge of the manuscript gently into #080808 */
+  mask-image: linear-gradient(to right, rgba(0,0,0,1) 75%, rgba(0,0,0,0) 100%);
+  -webkit-mask-image: linear-gradient(to right, rgba(0,0,0,1) 75%, rgba(0,0,0,0) 100%);
 }
 
 .banner-img {
@@ -94,12 +97,12 @@ body {
   object-position: left center;
 }
 
-/* Brand Block Wrapper */
+/* Tightened Brand Wrapper Bridge */
 .brand-wrapper {
   display: flex;
   align-items: center;
-  gap: 24px;
-  padding-left: 48px;
+  gap: 16px;          /* Reduced space between logo icon and text stack */
+  padding-left: 16px;  /* Reduced space between book diagram asset & logo mark */
   margin-right: auto;
 }
 

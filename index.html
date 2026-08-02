@@ -34,7 +34,11 @@
   <div id="labels-container"></div>
 
   <!-- Persistent Header Banner -->
-  <header id="ui-header">
+<header id="ui-header">
+    <div class="banner-left-asset">
+      <img src="assets/bookBanner200.png" alt="Book Banner Artifact" class="banner-img">
+    </div>
+
     <div class="brand-wrapper">
       <img src="assets/fluidCymatics-Studio202-black.png" alt="fluidCymatics Logo" class="brand-logo-img">
       <div class="brand-text-block">
@@ -194,7 +198,7 @@
       { id: 'n20', label: 'SYSTEM - Force Threshold', pos: [6.5, -0.5, 2], url: 'content/n20-force-threshold.html' }
     ];
 
-    const visibleGeo = new THREE.SphereGeometry(0.32, 32, 32);
+    const visibleGeo = new THREE.SphereGeometry(0.16, 32, 32);
     const hitTargetGeo = new THREE.SphereGeometry(0.9, 16, 16);
     const hitTargetMat = new THREE.MeshBasicMaterial({ visible: false });
 

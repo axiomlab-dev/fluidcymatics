@@ -41,7 +41,7 @@
 }
 
 body {
-  background: linear-gradient(180deg, #080808 40%, #ecec76 100%);
+  background: linear-gradient(180deg, #080808 40%, #1F1F1D 100%);
   color: var(--color-text-white);
   font-family: var(--font-mono);
   font-size: 12px;

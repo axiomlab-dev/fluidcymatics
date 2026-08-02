@@ -86,8 +86,8 @@ body {
   flex-shrink: 0;
   background-color: var(--color-canvas-bg);
   /* Fades the right edge of the manuscript gently into #080808 */
-  mask-image: linear-gradient(to right, rgba(0,0,0,1) 75%, rgba(0,0,0,0) 100%);
-  -webkit-mask-image: linear-gradient(to right, rgba(0,0,0,1) 75%, rgba(0,0,0,0) 100%);
+  mask-image: linear-gradient(to right, rgba(0,0,0,1) 55%, rgba(0,0,0,0) 100%);
+  -webkit-mask-image: linear-gradient(to right, rgba(0,0,0,1) 55%, rgba(0,0,0,0) 100%);
 }
 
 .banner-img {

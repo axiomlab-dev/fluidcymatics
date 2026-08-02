@@ -78,16 +78,29 @@ body {
   transition: height 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* Optional: Smooth Vignette Fade into Canvas Background */
+/* Flush-Left Asset Container with Structural Teal Margin Rule */
 .banner-left-asset {
   height: 100%;
   display: flex;
   align-items: center;
   flex-shrink: 0;
   background-color: var(--color-canvas-bg);
-  /* Fades the right edge of the manuscript gently into #080808 */
-  mask-image: linear-gradient(to right, rgba(0,0,0,1) 85%, rgba(0,0,0,0) 60%);
-  -webkit-mask-image: linear-gradient(to right, rgba(0,0,0,1) 85%, rgba(0,0,0,0) 600%);
+  position: relative;
+  /* Double Structural Border: 3px main line, 2px space, 1px accent line */
+  border-right: 3px solid var(--color-accent-hi);
+  padding-right: 2px; /* 2px internal gap */
+}
+
+/* Secondary 1px Outer Accent Line using a pseudo-element */
+.banner-left-asset::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: -4px; /* Positioned 1px line outside the 2px padding gap */
+  width: 1px;
+  height: 100%;
+  background-color: var(--color-accent-hi);
+  opacity: 0.6; /* Slightly softer for hierarchical depth */
 }
 
 .banner-img {
@@ -107,7 +120,7 @@ body {
 }
 
 .brand-logo-img {
-  height: 64px;
+  height: 68px;
   width: auto;
   transition: height 0.3s ease;
 }

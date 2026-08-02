@@ -86,7 +86,7 @@ body {
   align-items: center;
   flex-shrink: 0;
   background-color: var(--color-canvas-bg);
-  /* Matching 1px Minimal Silver Hairline */
+  /* Matching 2px Minimal Silver Hairline */
   border-right: 2px solid var(--color-text-white);
 }
 

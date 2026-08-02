@@ -87,20 +87,9 @@ body {
   position: relative;
   /* Thick Primary Teal Line */
   border-right: 1px solid var(--color-text-white); 
-  padding-right: 3px; /* Precise internal gap */
+  padding-right: 0px; /* dep? */
 }
 
-/* Secondary Outer Rule (Creates the double-line schematic effect) */
-.banner-left-asset::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  right: -1px; /* Positioned just outside the gap */
-  width: 3px;
-  height: 100%;
-  background-color: var(--color-accent-hi);
-  opacity: 0.0;
-}
 
 /* Brand Block Offset */
 .brand-wrapper {

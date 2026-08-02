@@ -394,22 +394,41 @@ body {
   }
 }
 
-/* Tablet / Medium Viewport Adjustment (Optional Safety Zone) */
-@media (min-width: 769px) and (max-width: 1024px) {
+/* =========================================================================
+   INTERMEDIATE & TABLET BREAKPOINT (769px - 1180px)
+   Prevents desktop split-screen collision and keeps portrait tablets clean.
+   ========================================================================= */
+@media (min-width: 769px) and (max-width: 1180px) {
   #ui-header {
     height: 88px;
     padding-right: 24px;
   }
 
+  /* 1. Constrains manuscript width so it never bleeds into logo space */
   .banner-left-asset {
-    max-width: 180px; /* Constrains manuscript width before full mobile drop */
+    max-width: 160px;
+    flex-shrink: 0;
+    overflow: hidden;
   }
 
+  /* 2. Scaled logo mark height for mid-tier viewports */
   .brand-logo-img {
     height: 48px;
+    width: auto;
   }
 
+  /* 3. Keeps logo and teal title side-by-side with locked spacing */
+  .brand-wrapper {
+    padding-left: 16px;
+    white-space: nowrap;
+  }
+
+  .brand-line-2 {
+    font-size: 12px;
+  }
+
+  /* 4. Slides long profile sub-line off and away to save horizontal real estate */
   .brand-line-3 {
-    display: none; /* Keeps header clean on tablet portrait */
+    display: none !important;
   }
 }

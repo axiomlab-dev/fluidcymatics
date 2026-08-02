@@ -86,8 +86,8 @@ body {
   background-color: var(--color-canvas-bg);
   position: relative;
   /* Thick Primary Teal Line */
-  border-right: 5px solid var(--color-text-white); 
-  padding-right: 4px; /* Precise internal gap */
+  border-right: 1px solid var(--color-text-white); 
+  padding-right: 3px; /* Precise internal gap */
 }
 
 /* Secondary Outer Rule (Creates the double-line schematic effect) */
@@ -95,18 +95,18 @@ body {
   content: '';
   position: absolute;
   top: 0;
-  right: -0px; /* Positioned just outside the gap */
-  width: 5px;
+  right: -1px; /* Positioned just outside the gap */
+  width: 3px;
   height: 100%;
   background-color: var(--color-accent-hi);
-  opacity: 1.0;
+  opacity: 0.0;
 }
 
 /* Brand Block Offset */
 .brand-wrapper {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 20px; 
   padding-left: 20px; /* Pulls logo tight to the new double line */
   margin-right: auto;
 }

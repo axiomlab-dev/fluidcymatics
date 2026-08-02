@@ -144,33 +144,52 @@ body {
 }
 
 /* ==========================================
-   FOOTER BAR
+   PERSISTENT FOOTER BAR (#ui-footer)
    ========================================== */
 #ui-footer {
-  position: absolute;
+  position: fixed;
   bottom: 0;
   left: 0;
-  width: 100%;
-  height: 40px;
-  z-index: 10;
+  width: 100vw;
+  min-height: 40px; /* Fluid baseline: allows expansion on text wrap */
+  height: auto;     /* Dynamic vertical sizing */
+  z-index: 50;
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 0 32px;
-  background: var(--color-canvas-bg);
+  padding: 8px 24px calc(8px + env(safe-area-inset-bottom, 0px)) 24px;
+  background-color: var(--color-canvas-bg);
   border-top: 1px solid var(--color-callout-bg);
   pointer-events: auto;
+  box-sizing: border-box;
 }
 
 .footer-quote {
-  font-size: 14px;
-  color: var(--color-visited);
-  letter-spacing: 0.03em;
+  color: var(--color-text-white);
+  font-size: 11px;
+  line-height: 1.4;
   text-align: center;
+  margin: 0;
+  opacity: 0.8;
+  letter-spacing: 0.02em;
 }
 
 .footer-quote span {
   color: var(--color-cahier);
+  font-weight: 500;
+  white-space: nowrap; /* Keeps Stockhausen attribution intact */
+}
+
+/* --- MOBILE RESPONSIVE ENGINE --- */
+@media (max-width: 768px) {
+  #ui-footer {
+    padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 0px)) 16px;
+  }
+  
+  .footer-quote {
+    font-size: 10px;
+    line-height: 1.35;
+  }
 }
 
 /* ==========================================

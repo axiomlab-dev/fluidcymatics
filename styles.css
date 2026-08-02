@@ -87,7 +87,7 @@ body {
   position: relative;
   /* Thick Primary Teal Line */
   border-right: 5px solid var(--color-text-white); 
-  padding-right: 0px; /* Precise internal gap */
+  padding-right: 4px; /* Precise internal gap */
 }
 
 /* Secondary Outer Rule (Creates the double-line schematic effect) */
@@ -95,10 +95,10 @@ body {
   content: '';
   position: absolute;
   top: 0;
-  right: -6px; /* Positioned just outside the gap */
-  width: 1px;
+  right: -0px; /* Positioned just outside the gap */
+  width: 5px;
   height: 100%;
-  background-color: var(--color-cahier);
+  background-color: var(--color-accent-hi);
   opacity: 1.0;
 }
 

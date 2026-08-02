@@ -77,8 +77,7 @@ body {
   overflow: hidden;
   transition: height 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
-
-/* Flush-Left Asset Container with Structural Teal Margin Rule */
+/* Flush-Left Asset Container with Blueprint Double Boundary */
 .banner-left-asset {
   height: 100%;
   display: flex;
@@ -86,21 +85,30 @@ body {
   flex-shrink: 0;
   background-color: var(--color-canvas-bg);
   position: relative;
-  /* Double Structural Border: 3px main line, 2px space, 1px accent line */
-  border-right: 5px solid var(--color-accent-hi);
-  padding-right: 0px; /* 2px internal gap */
+  /* Thick Primary Teal Line */
+  border-right: 4px solid var(--color-accent-hi); 
+  padding-right: 3px; /* Precise internal gap */
 }
 
-/* Secondary 1px Outer Accent Line using a pseudo-element */
+/* Secondary Outer Rule (Creates the double-line schematic effect) */
 .banner-left-asset::after {
   content: '';
   position: absolute;
   top: 0;
-  right: -4px; /* Positioned 1px line outside the 2px padding gap */
-  width: 3px;
+  right: -6px; /* Positioned just outside the gap */
+  width: 1px;
   height: 100%;
-  background-color: var(--color-accent-hi);
-  opacity: 0.88; /* Slightly softer for hierarchical depth */
+  background-color: var(--color-cahier);
+  opacity: 0.8;
+}
+
+/* Brand Block Offset */
+.brand-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding-left: 20px; /* Pulls logo tight to the new double line */
+  margin-right: auto;
 }
 
 .banner-img {

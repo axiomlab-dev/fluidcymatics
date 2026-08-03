@@ -41,7 +41,7 @@
 }
 
 body {
-  background: linear-gradient(180deg, #080808 40%, #1F1F1D 100%);
+  background: linear-gradient(180deg, #080808 40%, #000C29 100%);
   color: var(--color-text-white);
   font-family: var(--font-mono);
   font-size: 12px;
@@ -123,14 +123,63 @@ body {
   font-size: 13px;
   letter-spacing: 0.08em;
   font-weight: 600;
+    opacity: 0.9;
 }
 
 .brand-line-3 {
-  color: var(--color-text-white); /* Silver Main Body Text */
+  color: var(--color-cahier); /* Silver Main Body Text */
   font-size: 11px;
   line-height: 1.4;
-  opacity: 0.75;
+  opacity: 0.86;
 }
+
+.header-controls {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+  padding-right: 24px;
+  flex-shrink: 0; 
+  z-index: 10;
+}
+
+.btn-system {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--color-text-white);
+  color: var(--color-text-white);
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 6px 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  border-radius: 2px;
+}
+
+.btn-icon {
+  width: 13px;
+  height: 13px;
+  transition: transform 0.3s ease;
+}
+
+.btn-system:hover {
+  background: rgba(74, 123, 124, 0.15);
+  border-color: var(--color-accent-hi);
+  color: #FFFFFF;
+}
+
+.btn-system:hover .btn-icon {
+  transform: rotate(-90deg);
+}
+
+.btn-system:active {
+  transform: scale(0.97);
+}
+
 
 /* --- DYNAMIC SHRINK ENGINE OVERRIDES --- */
 #ui-header.shrink {
@@ -297,31 +346,80 @@ body {
   color: var(--color-bright-white);
 }
 
-/* ==========================================
-   RESPONSIVE / MOBILE OVERRIDES
-   ========================================== */
+/* =========================================================================
+   CLEAN MERGED RESPONSIVE & MOBILE CHASSIS ENGINE
+   ========================================================================= */
 
+/* 1. MOBILE & SMALL VIEWPORTS (<= 768px) */
 @media (max-width: 768px) {
+  /* Header Container */
   #ui-header {
-    padding: 10px 16px;
+    height: 54px;
+    padding: 0 12px;
+    gap: 8px;
+    justify-content: flex-start;
   }
 
+  /* Compact Book Asset (Centers & Auto-Truncates Geometry Proof) */
+  .banner-left-asset {
+    display: block !important;
+    width: 58px;
+    height: 100%;
+    flex-shrink: 0;
+    overflow: hidden;
+  }
+
+  .banner-left-asset img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center center; /* Forces truncation toward center geometry */
+  }
+
+  /* Brand & Logo Elements */
   .brand-wrapper {
-    gap: 10px;
+    padding-left: 4px;
+    gap: 8px;
   }
 
   .brand-logo-img {
-    height: 42px;
+    height: 24px;
+    width: auto;
+  }
+
+  .brand-text-block {
+    gap: 2px;
   }
 
   .brand-line-2 {
-    font-size: 11px;
+    font-size: 10px;
+    letter-spacing: 0.04em;
+    line-height: 1.2;
   }
 
+  /* Hide long tagline on mobile to save horizontal space */
   .brand-line-3 {
-    display: none;
+    display: none !important;
   }
 
+  /* Header Reset Control (Far Right) */
+  .header-controls {
+    padding-right: 0;
+    margin-left: auto;
+  }
+
+  .btn-system {
+    padding: 4px 8px;
+    font-size: 8px;
+    gap: 4px;
+  }
+
+  .btn-icon {
+    width: 10px;
+    height: 10px;
+  }
+
+  /* Footer & Panels */
   .footer-quote {
     display: none;
   }
@@ -339,85 +437,24 @@ body {
   }
 }
 
-/* Dual-screen / Foldable adjustment */
-@media (min-width: 769px) and (max-width: 1024px) {
-  #inspector-panel {
-    width: 50vw;
-    max-width: 50vw;
-  }
-}
-
-/* =========================================================================
-   RESPONSIVE HEADER BANNER BREAKPOINTS (@media)
-   ========================================================================= */
-
-/* Mobile & Small Viewports Engine */
-@media (max-width: 768px) {
-  #ui-header {
-    height: 64px; /* Compact mobile header ceiling height */
-    padding: 0 16px;
-    justify-content: flex-start;
-  }
-
-  /* 1. Manuscript Image Asset slides away completely */
-  .banner-left-asset {
-    display: none !important;
-  }
-
-  /* 2. Brand Block snaps flush left */
-  .brand-wrapper {
-    padding-left: 0;
-    gap: 12px;
-  }
-
-  /* 3. Logo Graphic scales down gracefully */
-  .brand-logo-img {
-    height: 32px;
-    width: auto;
-  }
-
-  /* 4. Text Stack Adjustments */
-  .brand-text-block {
-    gap: 2px;
-  }
-
-  /* Teal Title text stays active and scales for mobile readability */
-  .brand-line-2 {
-    font-size: 11px;
-    letter-spacing: 0.05em;
-    line-height: 1.2;
-  }
-
-  /* 5. Sub-profile line 3 slides off and away */
-  .brand-line-3 {
-    display: none !important;
-  }
-}
-
-/* =========================================================================
-   INTERMEDIATE & TABLET BREAKPOINT (769px - 1180px)
-   Prevents desktop split-screen collision and keeps portrait tablets clean.
-   ========================================================================= */
+/* 2. TABLET & INTERMEDIATE BREAKPOINT (769px - 1180px) */
 @media (min-width: 769px) and (max-width: 1180px) {
   #ui-header {
     height: 88px;
     padding-right: 24px;
   }
 
-  /* 1. Constrains manuscript width so it never bleeds into logo space */
   .banner-left-asset {
     max-width: 160px;
     flex-shrink: 0;
     overflow: hidden;
   }
 
-  /* 2. Scaled logo mark height for mid-tier viewports */
   .brand-logo-img {
     height: 48px;
     width: auto;
   }
 
-  /* 3. Keeps logo and teal title side-by-side with locked spacing */
   .brand-wrapper {
     padding-left: 16px;
     white-space: nowrap;
@@ -427,8 +464,12 @@ body {
     font-size: 12px;
   }
 
-  /* 4. Slides long profile sub-line off and away to save horizontal real estate */
   .brand-line-3 {
     display: none !important;
+  }
+
+  #inspector-panel {
+    width: 50vw;
+    max-width: 50vw;
   }
 }

@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -16,14 +17,14 @@
     }
   </script>
 
-<!-- High-DPI PNG Icon -->
-<link rel="icon" type="image/png" sizes="96x96" href="/assets/ominode/ominode-96.png">
+  <!-- High-DPI PNG Icon -->
+  <link rel="icon" type="image/png" sizes="96x96" href="/assets/ominode/ominode-96.png">
 
-<!-- Legacy ICO Fallback -->
-<link rel="icon" type="image/x-icon" href="/assets/ominode/ominode.ico">
+  <!-- Legacy ICO Fallback -->
+  <link rel="icon" type="image/x-icon" href="/assets/ominode/ominode.ico">
 
-<!-- Apple Touch Icon -->
-<link rel="apple-touch-icon" sizes="180x180" href="/assets/ominode/apple-touch-ominode.png">
+  <!-- Apple Touch Icon -->
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/ominode/apple-touch-ominode.png">
 </head>
 <body>
 
@@ -33,22 +34,33 @@
   <!-- HTML Labels Projected from 3D Space -->
   <div id="labels-container"></div>
 
-<!-- Persistent Header Banner -->
-<header id="ui-header">
-  <div class="banner-left-asset">
-    <img src="assets/book200.png" alt="Book Banner Artifact" class="banner-img">
-  </div>
+  <!-- Persistent Header Banner -->
+  <header id="ui-header">
+    <div class="banner-left-asset">
+      <img src="assets/book200.png" alt="Historical parchment manuscript displaying a classic Euclidean geometric proof with intersecting circles and an inscribed triangle matrix. Annotations written in original Latin cursive script detail proportional spatial relationships and chord projections across the vesica field. Serves as a historical precursor to modern field geometry, illustrating early human mapping of spatial dynamics long before digital WebGL rendering." class="banner-img">
+    </div>
 
-  <div class="brand-wrapper">
-    <img src="assets/fluidCymatics-Studio202-black.png" alt="fluidCymatics Logo" class="brand-logo-img">
-    <div class="brand-text-block">
-      <div class="brand-line-2">Spatial &amp; Structural Mechanics</div>
-      <div class="brand-line-3">
-        Knowledge Architect | Front-End Spatial &amp; Structural Mechanics &mdash; Modeling fluid information interfaces through field geometry and material logic
-      </div>
+<div class="brand-wrapper">
+  <img src="assets/fluidCymatics-Studio202-black.png" alt="fluidCymatics Logo" class="brand-logo-img">
+  <div class="brand-text-block">
+    <div class="brand-line-2">Front-End Spatial &amp; Structural Dynamics</div>
+    <div class="brand-line-3">
+      <span style="color: var(--color-text-white);">Knowledge Architect &mdash;</span> Modeling fluid information interfaces through field geometry and material logic
     </div>
   </div>
-</header>
+</div>
+
+    <div class="header-controls">
+      <button id="btn-reset-graph" class="btn-system" title="Reset Camera & Graph Field">
+        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+          <path d="M3 3v5h5"/>
+        </svg>
+        <span>reset</span>
+      </button>
+    </div>
+
+  </header>
 
   <!-- Persistent Footer Bar -->
   <footer id="ui-footer">
@@ -89,13 +101,8 @@
     syncHeaderHeight();
     window.addEventListener('resize', syncHeaderHeight);
 
-    const logoImg = document.querySelector('.brand-logo-img');
-    if (logoImg) {
-      logoImg.addEventListener('load', syncHeaderHeight);
-    }
-
     /* =========================================================================
-       MODULE 1: SCENE SETUP & LIGHTING ENGINE
+       MODULE 1: SCENE SETUP, LIGHTING & CAMERA INERTIA ENGINE (BLOC 1)
        ========================================================================= */
     const container = document.getElementById('scene-container');
     const labelsContainer = document.getElementById('labels-container');
@@ -110,9 +117,13 @@
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     container.appendChild(renderer.domElement);
 
+    /* Smooth Obsidian-Style Camera Damping Controls */
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
-    controls.dampingFactor = 0.05;
+    controls.dampingFactor = 0.025; // Soft weighted inertia
+    controls.rotateSpeed = 0.7;
+    controls.zoomSpeed = 0.8;
+    controls.panSpeed = 0.7;
 
     const ambientLight = new THREE.AmbientLight(0x777777, 0.7);
     scene.add(ambientLight);
@@ -283,7 +294,7 @@
     }
 
     /* =========================================================================
-       MODULE 4: DRAG CONTROLS (DYNAMIC NODE RE-POSITIONING)
+       MODULE 4: DRAG CONTROLS & GRAPH RESET ENGINE (BLOC 4)
        ========================================================================= */
     const dragControls = new DragControls(nodeParents, camera, renderer.domElement);
     let isDragging = false;
@@ -311,6 +322,53 @@
 
         edge.line.geometry.setFromPoints([localA, localB]);
         edge.line.geometry.attributes.position.needsUpdate = true;
+      });
+    }
+
+    /* Save original default node positions for reset action */
+    const initialNodePositions = nodeDataBlocks.map(data => ({
+      id: data.id,
+      pos: new THREE.Vector3(...data.pos)
+    }));
+
+    /* Bind controls globally so reset button can access them */
+    window.controls = controls;
+
+    /* GRAPH RESET BUTTON ACTION */
+    const resetBtn = document.getElementById('btn-reset-graph');
+
+    if (resetBtn) {
+      resetBtn.addEventListener('click', () => {
+        // 1. Reset Camera position and controls
+        controls.reset();
+        camera.position.set(0, 0, 18);
+        controls.target.set(0, 0, 0);
+        controls.update();
+
+        // 2. Reset Graph rotation back to default orientation
+        graphGroup.rotation.set(0, 0, 0);
+
+        // 3. Snap dragged nodes back to initial structural grid
+        nodeParents.forEach((parentGroup, index) => {
+          const initPos = initialNodePositions[index].pos;
+          parentGroup.position.copy(initPos);
+        });
+
+        // 4. Unhide any hidden nodes/labels (from double-clicks)
+        nodeMeshes.forEach(mesh => {
+          mesh.visible = true;
+        });
+        labelElements.forEach(item => {
+          item.element.style.display = 'block';
+          item.element.style.visibility = 'visible';
+        });
+
+        // 5. Close inspector panel and clear highlights
+        if (typeof closeInspector === 'function') closeInspector();
+        if (typeof clearHighlights === 'function') clearHighlights();
+
+        // 6. Recalculate edge connections
+        updateEdgeLines();
       });
     }
 
@@ -417,8 +475,8 @@
       }
     });
 
-    /* =========================================================================
-       MODULE 7: 3D-TO-2D SCREEN PROJECTION & LOD ENGINE
+/* =========================================================================
+       MODULE 7: 3D-TO-2D SCREEN PROJECTION & PROXIMITY L.O.D. ENGINE (BLOC 7)
        ========================================================================= */
     const tempV = new THREE.Vector3();
     const cameraPos = new THREE.Vector3();
@@ -432,9 +490,22 @@
         item.mesh.getWorldPosition(tempV);
         const distance = cameraPos.distanceTo(tempV);
 
-        const lodScale = THREE.MathUtils.clamp(1.6 - (distance / 20), 0.4, 1.2);
+        // 1. Label Opacity Fadeout: Fades to 0 opacity when pulling camera back
+        const labelOpacity = THREE.MathUtils.clamp((26 - distance) / 14, 0, 1.0);
+        item.element.style.opacity = labelOpacity;
+
+        // 2. Hide label completely when invisible to keep viewport clean
+        if (labelOpacity <= 0.02) {
+          item.element.style.visibility = 'hidden';
+        } else {
+          item.element.style.visibility = 'visible';
+        }
+
+        // 3. Node scale response based on camera distance
+        const lodScale = THREE.MathUtils.clamp(1.6 - (distance / 22), 0.35, 1.1);
         item.mesh.scale.setScalar(lodScale);
 
+        // 4. Screen space 3D-to-2D label projection
         tempV.project(camera);
         const x = (tempV.x *  .5 + .5) * window.innerWidth;
         const y = (tempV.y * -.5 + .5) * window.innerHeight;
@@ -442,10 +513,9 @@
         item.element.style.left = `${x}px`;
         item.element.style.top = `${y}px`;
 
-        const labelOpacity = THREE.MathUtils.clamp(2.0 - (distance / 15), 0.25, 1.0);
-        item.element.style.opacity = labelOpacity;
-
-        item.element.style.display = (tempV.z > 1) ? 'none' : 'block';
+        if (tempV.z > 1) {
+          item.element.style.visibility = 'hidden';
+        }
       });
     }
 
